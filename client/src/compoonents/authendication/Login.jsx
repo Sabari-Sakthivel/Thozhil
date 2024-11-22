@@ -12,72 +12,72 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white md:flex-row">
-      
-      <div className="text-4xl mt-14 pl-20 text-blue-500 font-bold">
-        <h1>JobHire</h1>
-      </div>
-
-      <div className="w-full md:w-1/2 mt-14 flex items-center justify-center">
-        <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md space-y-6">
-          <h2 className="text-2xl font-bold text-center text-gray-800">
-            Login
-          </h2>
-
-          <p className="text-sm font-medium text-gray-700 text-center">
-            Don't Have an Account?{" "}
+    <div className="min-h-screen flex">
+      {/* Left Side */}
+      <div className="flex-1 bg-white p-10">
+        <div className="max-w-sm mx-auto">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-blue-600">JobHire</h1>
+          </div>
+          <h2 className="text-3xl font-semibold mb-4">Login</h2>
+          <p className="mb-6 text-gray-600">
+            Don't have an account?{" "}
             <Link
               to="/authendication/Register"
-              className="text-blue-500 cursor-pointer hover:underline"
+              className="text-blue-600 underline"
             >
               Create Account
             </Link>
           </p>
 
-          <form className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          <form>
+            <div className="space-y-4">
+              {/* Email Input */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="Enter your email"
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="relative">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  placeholder="Enter your password"
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 flex mt-6 items-center text-gray-500 hover:text-blue-500 focus:outline-none"
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? (
+                    <AiOutlineEyeInvisible className="h-5 w-5" />
+                  ) : (
+                    <AiOutlineEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Password Input with Toggle */}
-            <div className="relative">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-3 flex mt-6 items-center text-gray-500 hover:text-blue-500 focus:outline-none"
-                onClick={togglePasswordVisibility}
-              >
-                {showPassword ? (
-                  <AiOutlineEyeInvisible className="h-5 w-5" />
-                ) : (
-                  <AiOutlineEye className="h-5 w-5" />
-                )}
-              </button>
-            </div>
-
-            <div className="flex justify-between items-center">
+            {/* Remember Me and Forgot Password */}
+            <div className="flex justify-between items-center mt-4">
               <label className="flex items-center text-sm text-gray-700">
                 <input
                   type="checkbox"
@@ -85,14 +85,15 @@ const Login = () => {
                 />
                 Remember Me
               </label>
-              <Link className="text-sm text-blue-500 hover:underline">
+              <Link className="text-sm text-blue-600 hover:underline">
                 Forgot Password?
               </Link>
             </div>
 
+            {/* Login Button */}
             <button
               type="submit"
-              className="w-full py-3 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700"
+              className="w-full mt-6 py-3 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Login
               <FaArrowRightLong className="ml-2" />
@@ -101,7 +102,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Section: Image */}
+      {/* Right Side */}
       <div className="w-full mr-10 md:w-1/2 h-screen">
         <img
           src={Loginimg}
