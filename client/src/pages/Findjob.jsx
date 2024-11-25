@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
-import { FaArrowRightLong,FaArrowLeftLong  } from "react-icons/fa6";
+import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 
 
-// Updated dummy data with varied job titles, roles, salaries, and locations
+
+//Dummy data with varied jobs.........
 const jobs = [
   {
     id: 1,
@@ -223,27 +226,12 @@ const jobs = [
   },
 ];
 
-
 const JobSearchComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [savedJobs, setSavedJobs] = useState([]); // For saving favorite jobs
   const jobsPerPage = 9;
-
-  // Filter jobs based on search
-  const filteredJobs = jobs.filter(
-    (job) =>
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      job.location.toLowerCase().includes(location.toLowerCase())
-  );
-
-  // Calculate the jobs to display based on the current page
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-
-  // Total number of pages
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
 
   const popularSearches = [
     "Software Engineer",
@@ -252,6 +240,28 @@ const JobSearchComponent = () => {
     "AI Researcher",
     "Cloud Engineer",
   ];
+
+  // Filter jobs based on search criteria
+  const filteredJobs = jobs.filter(
+    (job) =>
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      job.location.toLowerCase().includes(location.toLowerCase())
+  );
+
+  // Pagination logic
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+
+  // Save/Unsave a job
+  const toggleSaveJob = (jobId) => {
+    setSavedJobs((prevSavedJobs) =>
+      prevSavedJobs.includes(jobId)
+        ? prevSavedJobs.filter((id) => id !== jobId)
+        : [...prevSavedJobs, jobId]
+    );
+  };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -296,9 +306,9 @@ const JobSearchComponent = () => {
             </button>
           </div>
         </div>
-
-        {/* Popular Searches */}
       </div>
+
+      {/* Popular Searches */}
       <div className="mt-4">
         <p className="font-medium">Popular searches:</p>
         <div className="flex flex-wrap gap-2 mt-2">
@@ -323,15 +333,23 @@ const JobSearchComponent = () => {
         {currentJobs.map((job) => (
           <div
             key={job.id}
-            className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition"
+            className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition relative"
           >
+            <button
+              onClick={() => toggleSaveJob(job.id)}
+              className="absolute bottom-7 right-10 text-gray-400 hover:text-blue-500"
+            >
+              {savedJobs.includes(job.id) ? <FaBookmark /> : <FaRegBookmark />}
+            </button>
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg">{job.title}</h3>
               <span
                 className={`text-sm font-medium px-2 py-1 rounded ${
                   job.type === "FULL-TIME"
                     ? "bg-green-100 text-green-700"
-                    : "bg-yellow-100 text-yellow-700"
+                    : job.type === "PART-TIME"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-blue-100 text-blue-700"
                 }`}
               >
                 {job.type}
@@ -340,9 +358,12 @@ const JobSearchComponent = () => {
             <p className="text-gray-500">{job.company}</p>
             <p className="text-gray-500 text-sm">{job.location}</p>
             <p className="text-gray-800 font-medium mt-2">{job.salary}</p>
-            <button className="mt-4 bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600">
+            <Link
+              to="findjob/jobdescription"
+              className="mt-4 inline-block bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
+            >
               Apply Now
-            </button>
+            </Link>
           </div>
         ))}
       </div>
@@ -350,7 +371,7 @@ const JobSearchComponent = () => {
       {/* Pagination */}
       <div className="flex justify-center mt-6">
         <ul className="flex space-x-2 items-center">
-          {/* Left Arrow */}
+          {/* Previous Page */}
           <li>
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -381,7 +402,7 @@ const JobSearchComponent = () => {
             </li>
           ))}
 
-          {/* Right Arrow */}
+          {/* Next Page */}
           <li>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
