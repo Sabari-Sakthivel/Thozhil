@@ -19,11 +19,12 @@ const Header = () => {
             </li>
             
             <li>
-              <Link to="/Pages/Dasboard" className="text-gray-500 font-bold hover:text-blue-600">Dashboard</Link>
+              <Link to="/dasboard" className="text-gray-500 font-bold hover:text-blue-600">Dashboard</Link>
             </li>
             <li>
               <Link to="Find Employers" className="text-gray-500 font-bold hover:text-blue-600">Find Employers</Link>
             </li>
+            
           </ul>
         </nav>
 
@@ -32,7 +33,7 @@ const Header = () => {
           {/* Notification Icon */}
           <div className="relative">
             <FaBell className="text-gray-600 text-2xl" />
-            <span className="absolute top-0 right-0 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+            
           </div>
 
           {/* Profile Icon */}
