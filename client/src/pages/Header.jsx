@@ -1,30 +1,59 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaBell } from 'react-icons/fa';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { FaBell } from "react-icons/fa";
 
 const Header = () => {
+  const location = useLocation();
+
+  // Function to check if the link is active
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <header className="bg-white shadow-md py-4 sticky top-0 z-50 ">
+    <header className="bg-white shadow-md py-4 sticky top-0 z-50 overflow-y-auto scrollbar-hide">
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Title */}
         <div className="text-2xl font-bold">
-          <Link to="/" className="text-blue-600 text-4xl">JobHire</Link>
+          <Link to="/" className="text-blue-600 text-4xl">
+            JobHire
+          </Link>
         </div>
 
         {/* Navigation pages */}
         <nav>
           <ul className="flex space-x-8">
             <li>
-              <Link to="/" className="text-gray-500 font-bold hover:text-blue-600">Find Jobs</Link>
+              <Link
+                to="/"
+                className={`font-bold hover:text-blue-600 ${
+                  isActive("/") ? "text-blue-600" : "text-gray-500"
+                }`}
+              >
+                Find Jobs
+              </Link>
             </li>
-            
             <li>
-              <Link to="/dasboard" className="text-gray-500 font-bold hover:text-blue-600">Dashboard</Link>
+              <Link
+                to="/dashboard"
+                className={`font-bold hover:text-blue-600 ${
+                  isActive("/dashboard") ? "text-blue-600" : "text-gray-500"
+                }`}
+              >
+                Dashboard
+              </Link>
             </li>
             <li>
-              <Link to="Find Employers" className="text-gray-500 font-bold hover:text-blue-600">Find Employers</Link>
+              <Link
+                to="/find-employers"
+                className={`font-bold hover:text-blue-600 ${
+                  isActive("/find-employers")
+                    ? "text-blue-600"
+                    : "text-gray-500"
+                }`}
+              >
+                Find Employers
+              </Link>
             </li>
-            
+           
           </ul>
         </nav>
 
@@ -33,7 +62,6 @@ const Header = () => {
           {/* Notification Icon */}
           <div className="relative">
             <FaBell className="text-gray-600 text-2xl" />
-            
           </div>
 
           {/* Profile Icon */}
@@ -45,7 +73,12 @@ const Header = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <Link to="/Profile" className="text-gray-500 font-bold hover:text-blue-600">
+            <Link
+              to="/profile"
+              className={`font-bold hover:text-blue-600 ${
+                isActive("/profile") ? "text-blue-600" : "text-gray-500"
+              }`}
+            >
               Profile
             </Link>
           </div>

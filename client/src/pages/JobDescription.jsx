@@ -20,6 +20,10 @@ const JobDescription = () => {
     e.preventDefault();
     setSuccessMessage("Job Application submitted Successfully");
     setPopupOpen(false);
+    
+    setTimeout(() => {
+      setSuccessMessage(""); 
+    }, 2000);
   };
 
   return (
