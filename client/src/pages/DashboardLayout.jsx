@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { LuLogOut } from "react-icons/lu";
 import OverviewContent from "./Dashboard pages/Overview";
+import SettingsPage from "./Dashboard pages/Settings";
 
 function Dashboard() {
   const [activeRow, setActiveRow] = useState("Overview");
@@ -60,7 +61,7 @@ function Dashboard() {
         {activeRow === "AppliedJobs" && <div>Applied Jobs Page</div>}
         {activeRow === "SavedJobs" && <div>Saved Jobs Page</div>}
         {activeRow === "JobAlerts" && <div>Job Alerts Page</div>}
-        {activeRow === "jmmmSettings" && <div>Settings Page</div>}
+        {activeRow === "Settings" && <SettingsPage/>}
       </div>
     </div>
   );
