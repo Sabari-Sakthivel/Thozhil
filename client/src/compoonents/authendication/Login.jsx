@@ -1,14 +1,48 @@
 import React, { useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Loginimg from "../../assets/Login-img.png";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    console.log("Request Payload:", JSON.stringify({ email, password }));
+
+    try {
+      const response = await fetch("http://localhost:4000/user/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Response Data:", data);
+
+      if (data.success) {
+        navigate("/otpverify", { state: { email } });
+      } else {
+        setError(data.message || "Invalid Credentials");
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      setError("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -30,9 +64,8 @@ const Login = () => {
             </Link>
           </p>
 
-          <form>
+          <form onSubmit={handleLogin}>
             <div className="space-y-4">
-              {/* Email Input */}
               <div>
                 <label
                   htmlFor="email"
@@ -43,12 +76,12 @@ const Login = () => {
                 <input
                   type="email"
                   id="email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
                   placeholder="Enter your email"
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
-              {/* Password Input */}
               <div className="relative">
                 <label
                   htmlFor="password"
@@ -59,6 +92,8 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
                 />
@@ -98,6 +133,7 @@ const Login = () => {
               Login
               <FaArrowRightLong className="ml-2" />
             </button>
+            {error && <p className="text-red-500">{error}</p>}
           </form>
         </div>
       </div>

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   FiLayers,
-  FiBriefcase,
   FiBookmark,
   FiBell,
   FiSettings,
@@ -9,11 +8,14 @@ import {
   FiBriefcase as FiJobs,
   FiMapPin,
 } from "react-icons/fi";
+import { HiBriefcase } from "react-icons/hi";
 import { LuLogOut } from "react-icons/lu";
 import FindJob from "./Findjob"
 import OverviewContent from "./Dashboard pages/Overview";
 import AppliedJobs from "./Dashboard pages/AppliedJobs";
 import SettingsPage from "./Dashboard pages/Settings";
+import ApplicationTracking from "./Dashboard pages/ApplicationTracking";
+import SavedJobs from "./Dashboard pages/SavedJobs";
 
 function Dashboard() {
   const [activeRow, setActiveRow] = useState("Overview");
@@ -28,7 +30,7 @@ function Dashboard() {
     },
     {
       id: "AppliedJobs",
-      icon: <FiBriefcase size={22} />,
+      icon: <HiBriefcase size={22} />,
       label: "Applied Applications",
     },
     {
@@ -86,20 +88,8 @@ function Dashboard() {
           </div>
         )}
         {activeRow === "AppliedJobs" && <AppliedJobs />}
-        {activeRow === "SavedJobs" && (
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">Saved Applications</h2>
-            <p>View your saved job applications.</p>
-          </div>
-        )}
-        {activeRow === "ApplicationTracking" && (
-          <div>
-            <h2 className="text-2xl font-semibold mb-4">
-              Application Tracking
-            </h2>
-            <p>Track the status of your job applications here.</p>
-          </div>
-        )}
+        {activeRow === "SavedJobs" && <SavedJobs/>}
+        {activeRow === "ApplicationTracking" && <ApplicationTracking/>}
         {activeRow === "JobAlerts" && (
           <div>
             <h2 className="text-2xl font-semibold mb-4">Job Alerts</h2>

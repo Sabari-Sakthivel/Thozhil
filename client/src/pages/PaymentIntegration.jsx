@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const RazorpayPayment = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,10 @@ const RazorpayPayment = () => {
       [id]: value,
     }));
   };
+
+  const navigate=useNavigate();
+
+
 
   const handlePayment = () => {
     if (!formData.amount || !formData.name || !formData.email) {
@@ -31,6 +37,7 @@ const RazorpayPayment = () => {
       image: "https://example.com/your_logo", 
       handler: function (response) {
         alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
+        navigate("/authendication/Login")
       },
       prefill: {
         name: formData.name,

@@ -12,16 +12,13 @@ import {
   CategoryScale,
 } from "chart.js";
 
-
 ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale);
 
 const OverviewContent = () => {
-  
-  const applied = 30; 
-  const approved = 20; 
-  const rejected = 10; 
+  const applied = 30;
+  const approved = 20;
+  const rejected = 10;
 
-  
   const data = {
     labels: [
       "Applied Applications",
@@ -31,7 +28,7 @@ const OverviewContent = () => {
     datasets: [
       {
         data: [applied, approved, rejected],
-        backgroundColor: ["#4c8bf5", "#63d69f", "#f44336"], 
+        backgroundColor: ["#4c8bf5", "#63d69f", "#f44336"],
         borderColor: ["#fff", "#fff", "#fff"],
         borderWidth: 1,
       },
@@ -47,21 +44,21 @@ const OverviewContent = () => {
   };
 
   return (
-    <div className="flex-grow  scrollbar-hide">
+    <div className="flex-grow scrollbar-hide">
       {/* Main Content */}
-      <div className="flex-grow ">
+      <div className="flex-grow">
         {/* Header */}
         <div>
-          <h2 className="text-2xl font-bold ">Hello, Sabari Sakthivel</h2>
+          <h2 className="text-2xl font-bold">  Hello,<span className="text-blue-600"> Sabari Sakthivel</span></h2>
           <p className="text-gray-600 mb-2 text-base">
             Here are your daily activities and job alerts.
           </p>
         </div>
 
         {/* Overview Cards and Pie Chart Wrapper */}
-        <div className="">
+        <div>
           {/* Cards Row */}
-          <div className="grid grid-cols-4 gap-6 ">
+          <div className="grid grid-cols-4 gap-6">
             <div className="bg-blue-100 p-2 h-20 rounded shadow flex items-center justify-between">
               <div className="ml-4">
                 <p className="text-lg ml-14 font-semibold">0</p>
@@ -103,9 +100,18 @@ const OverviewContent = () => {
             </div>
           </div>
 
-          {/* Pie Chart Card */}
-          <div className=" ">
-            <div className="bg-gray-200 w-fit  px-6 py-1 absolute right-6 mt-8  rounded shadow">
+          {/* Application Tracking and Pie Chart Section */}
+          <div className="flex gap-6 mt-6">
+            {/* Scheduled Events */}
+            <div className="bg-gray-200 text-center rounded shadow p-4 flex-grow">
+              <h3 className="font-bold  text-lg mb-2">Scheduled Events</h3>
+              <p className="text-gray-600">
+                You have no scheduled events for today.
+              </p>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="bg-gray-200 rounded shadow p-4 w-fit">
               <h3 className="text-xl font-semibold mb-4">
                 Applications Overview
               </h3>

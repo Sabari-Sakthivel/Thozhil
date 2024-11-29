@@ -9,6 +9,7 @@ import Dashboard from "../pages/DashboardLayout";
 import FindEmployers from "../pages/FindEmployers";
 import JobDescription from "../pages/JobDescription";
 import PaymentIntegration from "../pages/PaymentIntegration"
+import OtpVerification from "../compoonents/authendication/OtpVerify";
 
 
 const router = createBrowserRouter([
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
   { path: "/authendication/Login", element: <Login /> },
   { path: "/authendication/Register", element: <Register /> },
   { path: "/payment", element:<PaymentIntegration/>},
+  { path: "/otpverify", element:<OtpVerification/>},
   //Private Routes.....
 
   {
