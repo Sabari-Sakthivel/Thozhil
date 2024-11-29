@@ -5,22 +5,42 @@ import {
   FiBookmark,
   FiBell,
   FiSettings,
+  FiUsers,
+  FiBriefcase as FiJobs,
+  FiMapPin,
 } from "react-icons/fi";
 import { LuLogOut } from "react-icons/lu";
+import FindJob from "./Findjob"
 import OverviewContent from "./Dashboard pages/Overview";
+import AppliedJobs from "./Dashboard pages/AppliedJobs";
 import SettingsPage from "./Dashboard pages/Settings";
 
 function Dashboard() {
   const [activeRow, setActiveRow] = useState("Overview");
 
   const menuItems = [
-    { id: "Overview", icon: <FiLayers size={22} />, label: "Overview" },
+    { id: "Overview", icon: <FiLayers size={22} />, label: "Dashboard" },
+    { id: "Jobs", icon: <FiJobs size={22} />, label: "Jobs" },
+    {
+      id: "FindEmployers",
+      icon: <FiUsers size={22} />,
+      label: "Find Employers",
+    },
     {
       id: "AppliedJobs",
       icon: <FiBriefcase size={22} />,
-      label: "Applied Jobs",
+      label: "Applied Applications",
     },
-    { id: "SavedJobs", icon: <FiBookmark size={22} />, label: "Saved Jobs" },
+    {
+      id: "SavedJobs",
+      icon: <FiBookmark size={22} />,
+      label: "Saved Applications",
+    },
+    {
+      id: "ApplicationTracking",
+      icon: <FiMapPin size={22} />,
+      label: "Application Tracking",
+    },
     { id: "JobAlerts", icon: <FiBell size={22} />, label: "Job Alerts" },
     { id: "Settings", icon: <FiSettings size={22} />, label: "Settings" },
   ];
@@ -28,7 +48,7 @@ function Dashboard() {
   return (
     <div className="flex h-full">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md p-4 flex flex-col h-full fixed top-0  ">
+      <div className="w-64 bg-white shadow-md p-4 flex flex-col h-full fixed top-0">
         <nav className="flex flex-col h-full w-full justify-between">
           <ul className="pt-20 w-full">
             {menuItems.map((item) => (
@@ -58,10 +78,35 @@ function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100 ml-64 scrollbar-hide">
         {activeRow === "Overview" && <OverviewContent />}
-        {activeRow === "AppliedJobs" && <div>Applied Jobs Page</div>}
-        {activeRow === "SavedJobs" && <div>Saved Jobs Page</div>}
-        {activeRow === "JobAlerts" && <div>Job Alerts Page</div>}
-        {activeRow === "Settings" && <SettingsPage/>}
+        {activeRow === "Jobs" && <FindJob/>}
+        {activeRow === "FindEmployers" && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Find Employers</h2>
+            <p>Search for employers and learn more about their job openings.</p>
+          </div>
+        )}
+        {activeRow === "AppliedJobs" && <AppliedJobs />}
+        {activeRow === "SavedJobs" && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Saved Applications</h2>
+            <p>View your saved job applications.</p>
+          </div>
+        )}
+        {activeRow === "ApplicationTracking" && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">
+              Application Tracking
+            </h2>
+            <p>Track the status of your job applications here.</p>
+          </div>
+        )}
+        {activeRow === "JobAlerts" && (
+          <div>
+            <h2 className="text-2xl font-semibold mb-4">Job Alerts</h2>
+            <p>Manage your job alerts and notifications here.</p>
+          </div>
+        )}
+        {activeRow === "Settings" && <SettingsPage />}
       </div>
     </div>
   );

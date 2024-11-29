@@ -9,7 +9,7 @@ const Header = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="bg-white shadow-md py-4 sticky top-0 z-50 overflow-y-auto scrollbar-hide">
+    <header className="bg-white shadow-md py-2 sticky top-0 z-50 overflow-y-auto scrollbar-hide">
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Title */}
         <div className="text-2xl font-bold">
@@ -19,43 +19,7 @@ const Header = () => {
         </div>
 
         {/* Navigation pages */}
-        <nav>
-          <ul className="flex space-x-8">
-            <li>
-              <Link
-                to="/"
-                className={`font-bold hover:text-blue-600 ${
-                  isActive("/") ? "text-blue-600" : "text-gray-500"
-                }`}
-              >
-                Find Jobs
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/dashboard"
-                className={`font-bold hover:text-blue-600 ${
-                  isActive("/dashboard") ? "text-blue-600" : "text-gray-500"
-                }`}
-              >
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/find-employers"
-                className={`font-bold hover:text-blue-600 ${
-                  isActive("/find-employers")
-                    ? "text-blue-600"
-                    : "text-gray-500"
-                }`}
-              >
-                Find Employers
-              </Link>
-            </li>
-           
-          </ul>
-        </nav>
+
 
         {/* Right side: Notification icon and Profile */}
         <div className="flex items-center space-x-6">

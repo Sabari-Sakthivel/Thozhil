@@ -3,7 +3,6 @@ import joblogo from "../assets/logo.png";
 import { SlCalender } from "react-icons/sl";
 import { RxLapTimer } from "react-icons/rx";
 import { FaUserGraduate, FaBriefcase, FaRegBookmark } from "react-icons/fa";
-
 const JobDescription = () => {
   const [isPopupOpen, setPopupOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");

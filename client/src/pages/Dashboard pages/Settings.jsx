@@ -9,6 +9,22 @@ import { IoSettingsOutline } from "react-icons/io5";
 const SettingsPage = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [activeTab, setActiveTab] = useState("personal");
+  const [qualificationInput,setQualificationInput]=useState('');
+  const [filteredQualifications,setFilteredQualifications]=useState([]);
+
+  //qualifications Options.....
+
+
+  const qualifications=[
+    "Bachelor of Science (B.Sc.)",
+    "Bachelor of Commerce (B.Com.)",
+    "Bachelor of Arts (B.A.)",
+    "Master of Science (M.Sc.)",
+    "Master of Commerce (M.Com.)",
+    "Master of Computer Applications (MCA)",
+    "Doctor of Philosophy (Ph.D.)",
+    "Diploma in Computer Applications (DCA)",
+  ]
 
   // Handle drag-and-drop or manual file selection for profile picture
   const onDropProfile = (acceptedFiles) => {
@@ -22,6 +38,25 @@ const SettingsPage = () => {
     maxFiles: 1,
     onDrop: onDropProfile,
   });
+  
+  const handleQualificationChange = (e) =>{
+    const value = e.target.value;
+    setQualificationInput(value);
+ 
+const suggestions = qualifications.filter()((q) =>{
+  q.toLowerCase().includes(value.toLowerCase())
+});
+setFilteredQualifications(suggestions.length > 0 ? suggestions : ["None"])
+
+};
+
+const handleSuggestionClick = (suggestion) =>{
+  if (suggestion !== "None") {
+    setQualificationInput(suggestion);
+
+  }
+  setFilteredQualifications([]); //close suggestions dropdown
+}
 
   return (
     <div className="p-6 bg-gray-100 h-screen">
@@ -79,7 +114,7 @@ const SettingsPage = () => {
           {activeTab === "personal" && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {/* Profile Picture Section (1st Column) */}
-              <div className="col-span-1 flex justify-center items-center">
+              <div className="col-span-1  justify-center items-center">
                 <label className="block text-gray-600 mb-2">
                   Profile Picture
                 </label>
@@ -186,7 +221,7 @@ const SettingsPage = () => {
                     name="maritalStatus"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   >
-                    <option value="single">None</option>
+                   <option>Select...</option>
                     <option value="single">Single</option>
                     <option value="married">Married</option>
                   </select>
@@ -198,11 +233,30 @@ const SettingsPage = () => {
                 {/* Education */}
                 <div>
                   <label className="block text-gray-600">Education</label>
-                  <select className="w-full border border-gray-300 rounded-md p-2">
-                    <option>Select...</option>
-                    <option>Bachelor's</option>
-                    <option>Master's</option>
-                  </select>
+                  <input
+                       type="text"
+                       value={qualificationInput}
+                       onChange={handleQualificationChange}
+                       placeholder="Search...."
+                       className="w-full border border-gray-300 rounded p-2"
+                       />
+                       {filteredQualifications.length > 0 && (
+                        <ul className="border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto ">
+                          {filteredQualifications.map ((q,index)=>(
+                            <li 
+                            key={index}
+                            classname={`p-2 cursor-pointer ${
+                              q === "None"
+                                 ? "text-gray-500 cursor-not-allowed"
+                                 : "hover:bg-indigo-100"
+                            }`}
+                            onClick={()=>handleSuggestionClick(q)}
+                            >
+                              
+                            </li>
+                          ))}
+                        </ul>
+                       )}
                 </div>
 
                 {/* Job Role */}
@@ -248,8 +302,7 @@ const SettingsPage = () => {
                     type="text"
                     id="nationality"
                     name="nationality"
-                    placeholder="Enter your nationality"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="mt- block w-full rounded p-2 border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                 </div>
               </div>
@@ -257,21 +310,11 @@ const SettingsPage = () => {
           )}
 
           {/* Submit Button */}
-          <div className="mt-6 flex justify-center">
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-
-        {/* Save Changes Button */}
-        <div className="mt-6">
-          <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+          <div className="mt-16  ">
+          <button className="bg-blue-500 ml-96  text-white px-6 py-2 rounded-md hover:bg-blue-600">
             Save Changes
           </button>
+          </div>
         </div>
       </div>
     </div>

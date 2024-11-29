@@ -7,7 +7,7 @@ const Layout = () => {
   const location = useLocation();
 
   // Define routes where the footer should NOT appear
-  const noFooterRoutes = ["/dashboard"];
+  const noFooterRoutes = ["/"];
 
   // Check if the current route is in the list
   const hideFooter = noFooterRoutes.includes(location.pathname);

@@ -230,7 +230,7 @@ const JobSearchComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [savedJobs, setSavedJobs] = useState([]); // For saving favorite jobs
+  const [savedJobs, setSavedJobs] = useState([]); 
   const jobsPerPage = 9;
 
   const popularSearches = [

@@ -13,7 +13,7 @@ import PaymentIntegration from "../pages/PaymentIntegration"
 
 const router = createBrowserRouter([
   //  Auth ROutes......
-  { path: "/Login", element: <Login /> },
+  { path: "/authendication/Login", element: <Login /> },
   { path: "/authendication/Register", element: <Register /> },
   { path: "/payment", element:<PaymentIntegration/>},
   //Private Routes.....
@@ -22,8 +22,8 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      { index: true, element: <Findjob /> },
-      { path: "/dashboard", element: <Dashboard/> },
+      { index: true, element: <Dashboard /> },
+      { path: "FindJob", element: <Findjob/> },
       { path: "FindEmployers", element: <FindEmployers /> },
       { path: "findjob/jobdescription", element: <JobDescription /> },
       
