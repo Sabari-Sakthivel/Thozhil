@@ -14,8 +14,6 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  const navigate =useNavigate
-
   const handleRegister = async (e) => {
   e.preventDefault(); // Prevent form's default submission behavior
 
@@ -51,7 +49,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const navigate = useNavigate()
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -133,7 +131,9 @@ const Register = () => {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-      }),
+      },
+      
+    ),
     });
 
     const result = await response.json();
@@ -142,7 +142,9 @@ const Register = () => {
       // Success handling (e.g., redirect to login)
       console.log("Registration successful:", result);
       // Redirect to login page
-      window.location.href = "/otpverify";
+      navigate("/otpverify", {
+        state: { email: formData.email }, // passing email in state
+      });
     } else {
       // Error handling
       console.error("Registration failed:", result);

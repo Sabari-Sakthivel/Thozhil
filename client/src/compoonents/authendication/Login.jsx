@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
@@ -14,30 +15,24 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log("Request Payload:", JSON.stringify({ email, password }));
 
     try {
-      const response = await fetch("http://localhost:4000/user/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+      const response = await axios.post("http://localhost:4000/user/login", {
+        email,
+        password,
       });
 
-      const data = await response.json();
-      console.log("Response Data:", data);
+      console.log("Response Data:", response.data);
 
-      if (data.success) {
-        navigate("/otpverify", { state: { email } });
+      if (response.data.success) {
+        alert("Login successfully")
+        // Redirect to the dashboard after successful login
+        navigate("/");
       } else {
-        setError(data.message || "Invalid Credentials");
+        setError(response.data.message || "Invalid Credentials");
       }
     } catch (error) {
       console.error("Error during login:", error);

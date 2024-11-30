@@ -12,39 +12,84 @@ const registerUser = async (req, res) => {
   try {
     const { username, email, phone, password } = req.body;
 
+    // Generate OTP and set creation time
+    const otp = generateOTP();
+    const otpCreatedAt = new Date();
+
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
-      return res.status(400).json({ error: "Email already in use." });
+      if (!existingUser.isVerified) {
+        // If user exists but is not verified, resend OTP
+        existingUser.otp = otp;
+        existingUser.otpCreatedAt = otpCreatedAt;
+        await existingUser.save();
+
+        // Send verification email
+        await sendEmail(
+          existingUser.email,
+          "Email verification",
+          verifyEmailTemplate(otp, existingUser.username) // Assuming username exists in the document
+        );
+        return res.json({
+          message: `OTP sent to registered email ${existingUser.email}`,
+        });
+      } else {
+        // If user is already verified
+        return res.status(400).json({ error: "Email already registered." });
+      }
     }
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
-
+    // Create a new user
     const user = new User({
       username,
       email,
       phone,
-      password: hashedPassword,
+      password,
+      otp,
+      otpCreatedAt,
+      isVerified: false, // Set isVerified to false initially
     });
 
     await user.save();
-    res.status(201).json({ message: "User registered successfully" });
+
+    // Send verification email
+    await sendEmail(
+      user.email,
+      "Email verification",
+      verifyEmailTemplate(otp, username)
+    );
+
+    res.status(201).json({
+      message: `User registered successfully. OTP sent to email ${user.email}`,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error, please try again later." });
+    res.status(500).json({ error: "Server error. Please try again later." });
   }
 };
 
 const verifyOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
+console.log(req.body)
   try {
     // Find user by email
     const user = await User.findOne({ email });
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if OTP is set
+    if (!user.otp || !user.otpCreatedAt) {
+      return res.status(400).json({
+        success: false,
+        message: "No OTP found or OTP already verified",
+      });
     }
 
     // Calculate OTP age in seconds
@@ -52,27 +97,39 @@ const verifyOTP = asyncHandler(async (req, res) => {
 
     // Check if OTP has expired (e.g., expire after 5 minutes)
     if (otpAge > 300) {
-      // 300 seconds = 5 minutes
-      return res.status(400).json({ success: false, message: "OTP expired" });
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one.",
+      });
     }
 
     // Check if OTP matches
     if (user.otp !== otp) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
-    } else {
-      // Clear OTP and verification timestamp
-      user.otp = null;
-      user.otpCreatedAt = null;
-      user.isVerified = true;
-
-      // Save updated user
-      await user.save();
-
-      res.json({ success: true, message: "OTP verified successfully" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
     }
+
+    // Clear OTP and mark the user as verified
+    user.otp = null;
+    user.otpCreatedAt = null;
+    user.isVerified = true;
+
+    // Save updated user
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "OTP verified successfully",
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error during OTP verification:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 });
 
@@ -87,7 +144,7 @@ const signin = asyncHandler(async (req, res) => {
         .json({ message: "User not registered or not verified" });
     }
 
-    const validPassword = await user.comparePassword(password);
+    const validPassword = await user.matchPassword(password);
     if (!validPassword) {
       return res.status(400).json({ message: "Password is incorrect" });
     }

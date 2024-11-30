@@ -1,14 +1,16 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 function OtpVerification() {
-  const [otp, setOtp] = useState(new Array(4).fill("")); // 4-digit OTP state
+  const [otp, setOtp] = useState(new Array(4).fill("")); 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  const location = useLocation(); // Get email from location state
-  const { email } = location.state || {}; // Destructure email from state
+  const location = useLocation(); 
+  const { email } = location.state || {}; 
+  console.log(email)
 
   // Handle OTP input changes
   const handleChange = (element, index) => {
@@ -28,36 +30,33 @@ function OtpVerification() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.join("").length !== 4) {
-      setError("Please enter a valid 4-digit OTP.");
-      return;
+        setError("Please enter a valid 4-digit OTP.");
+        return;
     }
 
     try {
-      const response = await fetch("http://localhost:4000/user/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ otp: otp.join(""), email: email }),
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccessMessage("OTP verified successfully. Please log in again.");
-        setError("");
-        setTimeout(() => {
-          navigate("/payment");
-        }, 3000); // Redirect after 3 seconds
-      } else {
-        setError("Invalid OTP. Please try again.");
-        setSuccessMessage("");
-      }
+        const response = await axios.post('http://localhost:4000/user/verify-otp', { otp: otp.join("") , 
+          email: email,
+          
+        });
+            
+        if (response.data.success) {
+            setSuccessMessage("OTP verified successfully. Please log in again.");
+            setError(""); 
+            setTimeout(() => {
+                navigate('/payment');
+            }, 2000); 
+        } else {
+            setError("Invalid OTP. Please try again.");
+            setSuccessMessage("");
+        }
     } catch (err) {
-      console.error("Error verifying OTP:", err);
-      setError("An error occurred. Please try again.");
-      setSuccessMessage("");
+        console.error("Error verifying OTP:", err);
+        setError("An error occurred. Please try again.");
+        setSuccessMessage("");
     }
-  };
+};
+  
 
   // Resend OTP
   const handleOnResendOtp = async () => {
