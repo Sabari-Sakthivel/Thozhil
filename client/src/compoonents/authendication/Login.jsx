@@ -4,20 +4,36 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Loginimg from "../../assets/Login-img.png";
+import { useAuth } from "../../pages/contextApi/AuthContext"; // Import AuthContext
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
+  const { login } = useAuth(); // Destructure the login function from context
+  const navigate = useNavigate();
+
+  // Toggle Password Visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Request Payload:", JSON.stringify({ email, password }));
+    setError(""); // Clear previous errors
+    setLoading(true); // Set loading state to true
+
+    // Validate Inputs
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await axios.post("http://localhost:4000/user/login", {
@@ -25,18 +41,25 @@ const Login = () => {
         password,
       });
 
-      console.log("Response Data:", response.data);
+      if (response.data.token) {
+        alert("Login successful!");
+        navigate("/layout");
 
-      if (response.data.success) {
-        alert("Login successfully")
-        // Redirect to the dashboard after successful login
-        navigate("/");
+        // Store the token in localStorage
+        const storageMethod = rememberMe ? localStorage : sessionStorage;
+        storageMethod.setItem("token", response.data.token); // Save token
+
+        // Update the isAuthenticated state in AuthContext
+        login(response.data.token);
       } else {
-        setError(response.data.message || "Invalid Credentials");
+        setError(response.data || "Invalid credentials.");
+        alert(response.data.message)
       }
-    } catch (error) {
-      console.error("Error during login:", error);
+    } catch (err) {
       setError("An error occurred. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setLoading(false); // Reset loading state
     }
   };
 
@@ -52,7 +75,7 @@ const Login = () => {
           <p className="mb-6 text-gray-600">
             Don't have an account?{" "}
             <Link
-              to="/authendication/Register"
+              to="/authentication/register"
               className="text-blue-600 underline"
             >
               Create Account
@@ -111,11 +134,16 @@ const Login = () => {
               <label className="flex items-center text-sm text-gray-700">
                 <input
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
                   className="mr-2 rounded border-gray-300 focus:ring-blue-500"
                 />
                 Remember Me
               </label>
-              <Link className="text-sm text-blue-600 hover:underline">
+              <Link
+                to="/authendication/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
                 Forgot Password?
               </Link>
             </div>
@@ -123,12 +151,17 @@ const Login = () => {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full mt-6 py-3 flex items-center justify-center bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+              className={`w-full mt-6 py-3 flex items-center justify-center ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              } text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
             >
-              Login
-              <FaArrowRightLong className="ml-2" />
+              {loading ? "Logging in..." : "Login"}
+              {!loading && <FaArrowRightLong className="ml-2" />}
             </button>
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="mt-4 text-red-500">{error}</p>}
           </form>
         </div>
       </div>

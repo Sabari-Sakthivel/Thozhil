@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // indicates if OTP has been verified
     },
+    
   },
   {
     timestamps: true,

@@ -143,7 +143,7 @@ const Register = () => {
       console.log("Registration successful:", result);
       // Redirect to login page
       navigate("/otpverify", {
-        state: { email: formData.email }, // passing email in state
+        state: { email: formData.email, name: formData.username }, // passing email in state
       });
     } else {
       // Error handling
@@ -172,7 +172,7 @@ const Register = () => {
           <p className="mb-3 text-gray-600 text-center md:text-left">
             Already have an account?{" "}
             <Link
-              to="/authendication/Login"
+              to="/"
               className="text-blue-600 underline"
             >
               Log In

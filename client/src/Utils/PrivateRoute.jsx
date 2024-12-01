@@ -1,20 +1,17 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 
-const PrivateRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem("authToken"); // Example logic
-  const userRole = localStorage.getItem("userRole"); // "free" or "premium"
+// Mock authentication function (replace this with your actual authentication logic)
+const isAuthenticated = () => {
+  // Check if the user is authenticated (e.g., check token, session, etc.)
+  return !!localStorage.getItem("token"); // Example check
+};
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />; // Redirect to login page
+const ProtectedRoute = ({ children }) => {
+  if (!isAuthenticated()) {
+    return <Navigate to="/" />;
   }
-
-  // Additional role checks (if needed)
-  if (userRole !== "premium" && window.location.pathname.includes("/pages/findjob/job-details")) {
-    return <h1 className="text-center mt-10 text-red-600">This page is only available for premium users.</h1>;
-  }
-
   return children;
 };
 
-export default PrivateRoute;
+export default ProtectedRoute;

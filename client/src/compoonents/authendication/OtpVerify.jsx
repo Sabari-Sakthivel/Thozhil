@@ -9,7 +9,7 @@ function OtpVerification() {
   const navigate = useNavigate();
 
   const location = useLocation(); 
-  const { email } = location.state || {}; 
+  const { email, username} = location.state || {}; 
   console.log(email)
 
   // Handle OTP input changes
@@ -37,6 +37,7 @@ function OtpVerification() {
     try {
         const response = await axios.post('http://localhost:4000/user/verify-otp', { otp: otp.join("") , 
           email: email,
+          username:username,
           
         });
             
@@ -44,7 +45,8 @@ function OtpVerification() {
             setSuccessMessage("OTP verified successfully. Please log in again.");
             setError(""); 
             setTimeout(() => {
-                navigate('/payment');
+                navigate('/payment',{state: { email: email, username: username },});
+                
             }, 2000); 
         } else {
             setError("Invalid OTP. Please try again.");
@@ -71,7 +73,7 @@ function OtpVerification() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: email }),
+        body: JSON.stringify({ email: email,username:username }),
       });
       const data = await response.json();
 

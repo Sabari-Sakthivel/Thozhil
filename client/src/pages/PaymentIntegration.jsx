@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 
 const RazorpayPayment = () => {
+  const location = useLocation(); 
+  const { email, username} = location.state || {}; 
   const [formData, setFormData] = useState({
     amount: "1000",
-    name: "sabari",
-    email: "velsabari66@gmail.com",
+   
   });
 
   const handleInputChange = (e) => {
@@ -37,7 +38,7 @@ const RazorpayPayment = () => {
       image: "https://example.com/your_logo", 
       handler: function (response) {
         alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
-        navigate("/authendication/Login")
+        navigate("/")
       },
       prefill: {
         name: formData.name,
@@ -76,6 +77,7 @@ const RazorpayPayment = () => {
             <input
               id="amount"
               type="number"
+              readOnly
               placeholder="Enter amount"
               value={formData.amount}
               onChange={handleInputChange}
@@ -93,7 +95,7 @@ const RazorpayPayment = () => {
               id="name"
               type="text"
               placeholder="Enter your name"
-              value={formData.name}
+              value={username}
               onChange={handleInputChange}
               className="w-full px-4 py-2 mt-2 text-gray-700 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />
@@ -109,7 +111,7 @@ const RazorpayPayment = () => {
               id="email"
               type="email"
               placeholder="Enter your email"
-              value={formData.email}
+              value={email}
               onChange={handleInputChange}
               className="w-full px-4 py-2 mt-2 text-gray-700 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />
