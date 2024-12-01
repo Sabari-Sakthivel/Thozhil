@@ -2,11 +2,11 @@ import React from "react";
 import { FiLayers, FiBookmark, FiBell, FiSettings, FiUsers, FiBriefcase as FiJobs, FiMapPin } from "react-icons/fi";
 import { HiBriefcase } from "react-icons/hi";
 import { LuLogOut } from "react-icons/lu";
-import { useNavigate, useLocation } from "react-router-dom"; // useLocation to track active route
+import { useNavigate, useLocation } from "react-router-dom"; 
 
-const Sidebar = ({ user }) => {
+const Sidebar = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Hook to get the current route
+  const location = useLocation(); 
 
   const menuItems = [
     { id: "dashboard", icon: <FiLayers size={22} />, label: "Dashboard", path: "/layout" },
@@ -21,7 +21,7 @@ const Sidebar = ({ user }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/"); // Redirect to home page after logout
+    navigate("/"); 
   };
 
   return (
@@ -36,7 +36,7 @@ const Sidebar = ({ user }) => {
                   ? "bg-blue-200 text-blue-500"
                   : "hover:bg-blue-200 hover:text-blue-500 text-gray-500"
               }`}
-              onClick={() => navigate(item.path)} // Navigate to the selected route
+              onClick={() => navigate(item.path)} 
             >
               <span>{item.icon}</span>
               {item.label}
@@ -44,7 +44,7 @@ const Sidebar = ({ user }) => {
           ))}
         </ul>
         <div className="mt-auto w-full">
-          <h1>Welcome, {user?.name || "Guest"}</h1>
+          
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 py-2 px-4 text-gray-500 rounded hover:bg-blue-200 hover:text-blue-500 cursor-pointer"

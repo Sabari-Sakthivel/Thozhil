@@ -111,7 +111,7 @@ const OverviewContent = () => {
             </div>
 
             {/* Pie Chart */}
-            <div className="bg-gray-200 rounded shadow p-4 w-fit">
+            <div className="bg-gray-200 rounded shadow px-4 pt-1 w-fit">
               <h3 className="text-xl font-semibold mb-4">
                 Applications Overview
               </h3>

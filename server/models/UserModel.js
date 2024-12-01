@@ -1,6 +1,6 @@
 // models/User.js
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs"); // to hash passwords
+const bcrypt = require("bcryptjs"); 
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,17 +14,17 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true, // ensure no duplicate email
+      unique: true, 
       lowercase: true,
       trim: true,
     },
     phone: {
       type: String,
       required: true,
-      unique: true, // ensure no duplicate phone number
+      unique: true, 
       minlength: 10,
       maxlength: 10,
-      match: /^[6-9]\d{9}$/, // regex for Indian phone numbers
+      match: /^[6-9]\d{9}$/, 
     },
     password: {
       type: String,
@@ -33,15 +33,15 @@ const userSchema = new mongoose.Schema(
     },
     otp: {
       type: String,
-      default: null, // stores the OTP
+      default: null, 
     },
     otpCreatedAt: {
       type: Date,
-      default: null, // stores the time when OTP was generated
+      default: null, 
     },
     isVerified: {
       type: Boolean,
-      default: false, // indicates if OTP has been verified
+      default: false, 
     },
     
   },

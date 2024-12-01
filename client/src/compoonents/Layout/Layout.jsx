@@ -6,11 +6,7 @@ import Sidebar from "../../pages/Dashboard pages/Sidebar";
 
 const Layout = () => {
   const location = useLocation();
-
-  // Define routes where the footer should NOT appear
-  const noFooterRoutes = ["/layout", "/layout/dashboard"];  // Add "/layout/dashboard" or adjust as necessary
-
-  // Check if the current route starts with "/layout" or is in the list
+  const noFooterRoutes = ["/layout", "/layout/dashboard"];  
   const hideFooter = noFooterRoutes.some(route => location.pathname.startsWith(route));
 
   return (
@@ -20,7 +16,7 @@ const Layout = () => {
       <Sidebar/>
     
       {/* Main Content */}
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 px-5 pt-5">
         <Outlet />
       </main>
 
