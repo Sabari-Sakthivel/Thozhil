@@ -1,14 +1,25 @@
-import React, { useState } from "react";
-import { useNavigate,useLocation } from "react-router-dom";
-
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const RazorpayPayment = () => {
-  const location = useLocation(); 
-  const { email, username} = location.state || {}; 
+  const location = useLocation();
+  const { email, username } = location.state || {};
+  console.log("Email:", email, "Username:", username);
   const [formData, setFormData] = useState({
-    amount: "1000",
-   
+    amount: "1060",
+    username: username || "",  // Initialize with username from location state
+    email: email || "",         // Initialize with email from location state
   });
+
+  useEffect(() => {
+    if (username && email) {
+      setFormData((prevData) => ({
+        ...prevData,
+        username: username,
+        email: email,
+      }));
+    }
+  }, [username, email]);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -18,31 +29,29 @@ const RazorpayPayment = () => {
     }));
   };
 
-  const navigate=useNavigate();
-
-
+  const navigate = useNavigate();
 
   const handlePayment = () => {
-    if (!formData.amount || !formData.name || !formData.email) {
+    if (!formData.amount || !formData.username || !formData.email) {
       alert("Please fill in all fields before proceeding!");
       return;
     }
 
     const options = {
       key: "rzp_test_rQNzx3WRnh97Sp",
-      razorpay_payment_id:"6sBc16Kf21Jh8tZ3onmDSLxF",
+      razorpay_payment_id: "6sBc16Kf21Jh8tZ3onmDSLxF",
       amount: parseInt(formData.amount) * 100, 
       currency: "INR",
-      name: formData.name,
+      name: formData.username,  // Use username here
       description: "Test Transaction",
       image: "https://example.com/your_logo", 
       handler: function (response) {
         alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
-        navigate("/")
+        navigate("/");
       },
       prefill: {
-        name: formData.name,
-        email: formData.email,
+        name: formData.username,  // Use username here
+        email: formData.email,     // Use email here
       },
       notes: {
         address: "Corporate Office",
@@ -78,7 +87,6 @@ const RazorpayPayment = () => {
               id="amount"
               type="number"
               readOnly
-              placeholder="Enter amount"
               value={formData.amount}
               onChange={handleInputChange}
               className="w-full px-4 py-2 mt-2 text-gray-700 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
@@ -86,16 +94,15 @@ const RazorpayPayment = () => {
           </div>
           <div>
             <label
-              htmlFor="name"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700"
             >
               Name
             </label>
             <input
-              id="name"
+              id="username"
               type="text"
-              placeholder="Enter your name"
-              value={username}
+              value={formData.username}
               onChange={handleInputChange}
               className="w-full px-4 py-2 mt-2 text-gray-700 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />
@@ -111,7 +118,7 @@ const RazorpayPayment = () => {
               id="email"
               type="email"
               placeholder="Enter your email"
-              value={email}
+              value={formData.email}
               onChange={handleInputChange}
               className="w-full px-4 py-2 mt-2 text-gray-700 border rounded-md focus:outline-none focus:ring focus:ring-blue-200"
             />

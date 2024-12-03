@@ -14,6 +14,10 @@ const {
 } = require('../controller/UserController');
 const { protectUser } = require('../middleware/UserMiddileware');
 
+
+
+
+// authendication routes ............
 // Route to register a new user
 router.post('/usercreate', registerUser);
 
@@ -34,6 +38,12 @@ router.post('/resend-otp', resendOTP);
 router.get('/getAllUser', getAllUsers);
 router.delete('/delete/:id', deleteUser);
 router.put('/update/:id', updateUserById);
+
+
+
+// profile updation routes
+
+
 
 router.get('/me', protectUser, getUserDetails); // Protect this route with middleware
 

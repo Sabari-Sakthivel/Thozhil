@@ -43,6 +43,8 @@ const Login = () => {
 
       if (response.data.token) {
         alert("Login successful!");
+        localStorage.setItem("username",response.data.user)
+        
         navigate("/layout");
 
         // Store the token in localStorage

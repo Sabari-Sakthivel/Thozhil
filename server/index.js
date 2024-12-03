@@ -1,9 +1,9 @@
-// index.js
 const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/Database");
 const cors = require("cors");
 const userRoutes = require("./routes/UserRoutes");
+const profileRoutes = require("./routes/ProfileRoutes"); 
 const { notFound, errorHandler } = require("./middleware/ErrorMiddleware");
 
 dotenv.config();
@@ -12,17 +12,20 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // your frontend URL
+    origin: "http://localhost:3000", 
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
 );
+
 connectDB();
 
 app.use(express.json());
 
+
 // Routes
 app.use("/user", userRoutes);
+app.use("/userp", profileRoutes); 
 
 // Error handling middlewares
 app.use(notFound);

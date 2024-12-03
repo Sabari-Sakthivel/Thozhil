@@ -43,13 +43,15 @@ const OverviewContent = () => {
     },
   };
 
+  const username =localStorage
+
   return (
     <div className="flex-grow scrollbar-hide">
       {/* Main Content */}
       <div className="flex-grow">
         {/* Header */}
         <div>
-          <h2 className="text-2xl font-bold">  Hello,<span className="text-blue-600"> Sabari Sakthivel</span></h2>
+          <h2 className="text-2xl font-bold">  Hello,<span className="text-blue-600"> {username.username}</span></h2>
           <p className="text-gray-600 mb-2 text-base">
             Here are your daily activities and job alerts.
           </p>

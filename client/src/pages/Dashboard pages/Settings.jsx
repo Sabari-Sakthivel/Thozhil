@@ -1,21 +1,16 @@
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FaCloudDownloadAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { CgProfile } from "react-icons/cg";
 import { TbWorld } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
-import { useAuth } from "../contextApi/AuthContext";
+import axios from "axios";
 
 const SettingsPage = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [activeTab, setActiveTab] = useState("personal");
-  const [qualificationInput, setQualificationInput] = useState("");
-  const [filteredQualifications, setFilteredQualifications] = useState([]);
-  const { user, setUser } = useAuth();
   
-  // Initialize the form state with user data from context or default empty object
-  const [formsaveData, setFormsaveData] = useState(user || {});
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -31,156 +26,99 @@ const SettingsPage = () => {
     experience: "",
     nationality: "",
     graduationYear: "",
+    resume: "",
     skills: "",
     areaOfInterest: "",
   });
 
-  const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    // Sync formData with formsaveData if needed
-    setFormData((prev) => ({
-      ...prev,
-      ...formsaveData
-    }));
-  }, [formsaveData]); // Triggered whenever formsaveData changes
-
-  const handleChangeFData = (e) => {
-    const { name, value } = e.target;
-    setFormsaveData((prev) => ({
-      ...prev,
-      [name]: value, // Updates formsaveData
-    }));
-  };
-  const handlesavedata = () => {
-    setUser(formsaveData); // Save to user context
-    localStorage.setItem("user", JSON.stringify(formsaveData)); // Persist in localStorage
-  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Validate the input change if needed
-    validateInput(name, value);
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const validateInput = (name, value) => {
-    let error = "";
-
-    switch (name) {
-      case "fullName":
-        if (!/^[a-zA-Z\s]+$/.test(value)) {
-          error = "Full name must contain only letters and spaces.";
-        }
-        break;
-
-      case "dob":
-        if (!value) {
-          error = "Date of birth is required.";
-        } else if (
-          !/^\d{4}$/.test(value) ||
-          value < 1900 ||
-          value > new Date().getFullYear()
-        ) {
-          error = "Enter a valid year ";
-        }
-        break;
-
-      case "phone":
-        if (!/^\d{10}$/.test(value)) {
-          error = "Phone number must be 10 digits.";
-        }
-        break;
-
-      case "email":
-        if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
-          error = "Enter a valid email address.";
-        }
-        break;
-
-      case "age":
-        if (value < 1 || value > 120) {
-          error = "Age must be between 1 and 120.";
-        }
-        break;
-
-      case "graduationYear":
-        const currentYear = new Date().getFullYear();
-        if (value < 1900 || value > currentYear) {
-          error = `Graduation year must be between 1900 and ${currentYear}.`;
-        }
-        break;
-
-      case "skills":
-        if (value && value.length < 3) {
-          error = "Skills must have at least 3 characters.";
-        }
-        break;
-
-      case "address":
-      case "areaOfInterest":
-        if (value.length < 5) {
-          error = `${
-            name === "address" ? "Address" : "Area of Interest"
-          } must be at least 5 characters.`;
-        }
-        break;
-
-      default:
-        break;
-    }
-
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
-  function validateFile(event) {
-    const file = event.target.files[0];
-    const errorMessage = document.getElementById("error-message");
-    if (file) {
-      const allowedExtensions = ["pdf", "doc", "docx"];
-      const fileExtension = file.name.split(".").pop().toLowerCase();
-
-      if (!allowedExtensions.includes(fileExtension)) {
-        errorMessage.textContent =
-          "Only .pdf, .doc, or .docx files are allowed.";
-        errorMessage.classList.remove("hidden");
-        event.target.value = ""; // Clear the invalid file
-      } else {
-        errorMessage.textContent = "";
-        errorMessage.classList.add("hidden");
-      }
-    }
-  }
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure all fields are validated
-    let formIsValid = true;
-    Object.keys(formData).forEach((key) => {
-      validateInput(key, formData[key]);
-      if (errors[key]) formIsValid = false;
-    });
+    // Validate form data (client-side validation)
+    if (
+      !formData.fullName ||
+      !formData.dob ||
+      !formData.gender ||
+      !formData.phone ||
+      !formData.email ||
+      !formData.maritalStatus ||
+      !formData.address ||
+      !formData.qualificationInput ||
+      !formData.skills ||
+      !formData.jobRole ||
+      !formData.areaOfInterest ||
+      !formData.experience ||
+      !formData.nationality ||
+      !formData.graduationYear ||
+      !formData.resume
+    ) {
+      alert("Please fill out all required fields!");
+      return;
+    }
 
-    if (formIsValid) {
-      console.log("Form Submitted", formData);
-    } else {
-      console.log("Validation Errors", errors);
+    console.log("Form Data:", formData);
+
+    try {
+      const requestData = {
+        ...formData, // Spread the form data here
+      };
+
+      // If profilePicture exists, add it separately
+      // if (profilePicture) {
+      //   const formPayload = new FormData();
+      //   Object.entries(requestData).forEach(([key, value]) => {
+      //     formPayload.append(key, value); // Append non-file data
+      //   });
+      //   formPayload.append("profilePicture", profilePicture); // Append file data
+
+      //   // Sending FormData if there's a file
+      //   const response = await axios.post(
+      //     "http://localhost:4000/userp/profile", // API endpoint
+      //     formPayload,
+      //     {
+      //       headers: {
+      //         "Content-Type": "multipart/form-data",
+      //       },
+      //     }
+      //   );
+      //   console.log("Profile saved successfully:", response.data);
+      //   alert("Profile saved successfully!");
+         
+      // } else {
+        // If no profile picture, send the data as JSON
+        const response = await axios.post(
+          "http://localhost:4000/userp/profile", // API endpoint
+          requestData, // Send form data as JSON
+          {
+            headers: {
+              "Content-Type": "application/json", // Content-Type as JSON for non-file data
+            },
+          }
+        );
+        console.log("Profile saved successfully:", response.data);
+        alert("Profile saved successfully!");
+      
+      }
+     catch (error) {
+      // Handle any errors
+      console.error(
+        "Error saving profile:",
+        error.response?.data || error.message
+      );
+      alert(
+        `Failed to save profile: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   };
-
-  //qualifications Options.....
-
-  const qualifications = [
-    "Bachelor of Science (B.Sc.)",
-    "Bachelor of Commerce (B.Com.)",
-    "Bachelor of Arts (B.A.)",
-    "Master of Science (M.Sc.)",
-    "Master of Commerce (M.Com.)",
-    "Master of Computer Applications (MCA)",
-    "Doctor of Philosophy (Ph.D.)",
-    "Diploma in Computer Applications (DCA)",
-  ];
 
   // Handle drag-and-drop or manual file selection for profile picture
   const onDropProfile = (acceptedFiles) => {
@@ -194,23 +132,6 @@ const SettingsPage = () => {
     maxFiles: 1,
     onDrop: onDropProfile,
   });
-
-  const handleQualificationChange = (e) => {
-    const value = e.target.value;
-    setQualificationInput(value);
-
-    const suggestions = qualifications.filter()((q) => {
-      q.toLowerCase().includes(value.toLowerCase());
-    });
-    setFilteredQualifications(suggestions.length > 0 ? suggestions : ["None"]);
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    if (suggestion !== "None") {
-      setQualificationInput(suggestion);
-    }
-    setFilteredQualifications([]); //close suggestions dropdown
-  };
 
   return (
     <div className="p-6 bg-gray-100 h-screen">
@@ -289,7 +210,8 @@ const SettingsPage = () => {
                           className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setProfilePicture(null);
+                            setProfilePicture(null); // Clear preview
+                            setFormData({ ...formData, profilePicture: null }); // Clear formData
                           }}
                         >
                           ✕
@@ -323,19 +245,11 @@ const SettingsPage = () => {
                       type="text"
                       id="fullName"
                       name="fullName"
-                      onChange={(e) => {
-                        handleChange(e);
-                        handleChangeFData(e);
-                      }}
                       value={formData.fullName}
-                      
-                      
+                      onChange={handleChange}
                       placeholder="Enter your name"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.fullName && (
-                      <p className="text-sm text-red-600">{errors.fullName}</p>
-                    )}
                   </div>
 
                   {/* Date of Birth */}
@@ -352,11 +266,8 @@ const SettingsPage = () => {
                       name="dob"
                       value={formData.dob}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.dob && (
-                      <p className="text-sm text-red-600">{errors.dob}</p>
-                    )}
                   </div>
 
                   {/* Gender */}
@@ -372,16 +283,13 @@ const SettingsPage = () => {
                       name="gender"
                       value={formData.gender}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select Gender</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
                     </select>
-                    {errors.gender && (
-                      <p className="text-sm text-red-600">{errors.gender}</p>
-                    )}
                   </div>
 
                   {/* Age */}
@@ -397,16 +305,10 @@ const SettingsPage = () => {
                       id="age"
                       name="age"
                       value={formData.age}
-                      onChange={(e) => {
-                        handleChange(e); // Update formData
-                        handleChangeFData(e); // Update formsaveData
-                      }}
+                      onChange={handleChange}
                       placeholder="e.g 24"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.age && (
-                      <p className="text-sm text-red-600">{errors.age}</p>
-                    )}
                   </div>
 
                   {/* Phone Number */}
@@ -418,17 +320,14 @@ const SettingsPage = () => {
                       Phone Number
                     </label>
                     <input
-                      type="tel"
+                      type="number"
                       id="phone"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="Your phone number"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-5001"
                     />
-                    {errors.phone && (
-                      <p className="text-sm text-red-600">{errors.phone}</p>
-                    )}
                   </div>
 
                   {/* Email */}
@@ -444,16 +343,10 @@ const SettingsPage = () => {
                       id="email"
                       name="email"
                       value={formData.email}
-                      onChange={(e) => {
-                        handleChange(e); // Update formData
-                        handleChangeFData(e); // Update formsaveData
-                      }}
-                      placeholder="example123@gmail.com"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      onChange={handleChange}
+                      placeholder="example@example.com"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.email && (
-                      <p className="text-sm text-red-600">{errors.email}</p>
-                    )}
                   </div>
 
                   {/* Marital Status */}
@@ -469,17 +362,12 @@ const SettingsPage = () => {
                       name="maritalStatus"
                       value={formData.maritalStatus}
                       onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option>Select...</option>
                       <option value="single">Single</option>
                       <option value="married">Married</option>
                     </select>
-                    {errors.maritalStatus && (
-                      <p className="text-sm text-red-600">
-                        {errors.maritalStatus}
-                      </p>
-                    )}
                   </div>
 
                   {/* Address */}
@@ -496,12 +384,9 @@ const SettingsPage = () => {
                       rows="3"
                       value={formData.address}
                       onChange={handleChange}
-                      placeholder="Enter your Address..."
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
-                    ></textarea>
-                    {errors.address && (
-                      <p className="text-sm text-red-600">{errors.address}</p>
-                    )}
+                      placeholder="Enter your Address"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                   </div>
                 </div>
 
@@ -514,28 +399,16 @@ const SettingsPage = () => {
                     </label>
                     <input
                       type="text"
-                      value={qualificationInput}
-                      onChange={handleQualificationChange}
+                      value={formData.qualificationInput} // Ensure it's controlled
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          qualificationInput: e.target.value,
+                        })
+                      }
                       placeholder="Search...."
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {filteredQualifications.length > 0 && (
-                      <ul className="border border-gray-300 rounded mt-1 bg-white max-h-40 overflow-y-auto">
-                        {filteredQualifications.map((q, index) => (
-                          <li
-                            key={index}
-                            className={`p-2 cursor-pointer ${
-                              q === "None"
-                                ? "text-gray-500 cursor-not-allowed"
-                                : "hover:bg-indigo-100"
-                            }`}
-                            onClick={() => handleSuggestionClick(q)}
-                          >
-                            {q}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                   </div>
                   {/* Skills */}
                   <div>
@@ -544,15 +417,17 @@ const SettingsPage = () => {
                     </label>
                     <input
                       type="text"
+                      id="skills"
+                      name="skills"
+                      value={formData.skills} // Ensure it's controlled
+                      onChange={(e) =>
+                        setFormData({ ...formData, skills: e.target.value })
+                      }
                       placeholder="e.g., JavaScript, React, Python"
-                      value={formData.skills}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.skills && (
-                      <p className="text-sm text-red-600">{errors.skills}</p>
-                    )}
                   </div>
+
                   {/* Graduation Year */}
                   <div>
                     <label
@@ -568,13 +443,8 @@ const SettingsPage = () => {
                       value={formData.graduationYear}
                       onChange={handleChange}
                       placeholder="e.g 2024"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.graduationYear && (
-                      <p className="text-sm text-red-600">
-                        {errors.graduationYear}
-                      </p>
-                    )}
                   </div>
 
                   {/* Nationality */}
@@ -592,13 +462,8 @@ const SettingsPage = () => {
                       value={formData.nationality}
                       onChange={handleChange}
                       placeholder="e.g Indian"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {errors.nationality && (
-                      <p className="text-sm text-red-600">
-                        {errors.nationality}
-                      </p>
-                    )}
                   </div>
 
                   {/* job role */}
@@ -611,16 +476,13 @@ const SettingsPage = () => {
                     </label>
                     <input
                       type="text"
-                      id="jobrole"
-                      name="jobrole"
+                      id="jobRole"
+                      name="jobRole" // Consistent name
                       value={formData.jobRole}
                       onChange={handleChange}
-                      placeholder="e.g Web Development"
-                      className="w-full border border-gray-300 rounded-md p-2 mt-1"
+                      className="w-full px-4 py-2 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter your job role"
                     />
-                    {errors.jobRole && (
-                      <p className="text-sm text-red-600">{errors.jobRole}</p>
-                    )}
                   </div>
 
                   {/* Resume Upload */}
@@ -635,12 +497,12 @@ const SettingsPage = () => {
                       type="file"
                       id="resume"
                       name="resume"
-                      onChange={validateFile}
+                      accept="application/pdf"
+                      onChange={(e) =>
+                        setFormData({ ...formData, resume: e.target.files[0] })
+                      }
                       className="w-full border border-gray-300 rounded-md p-2 mt-1"
                     />
-                    {errors.resume && (
-                      <p className="text-sm text-red-600">{errors.resume}</p>
-                    )}
                   </div>
 
                   {/* Experience */}
@@ -657,14 +519,9 @@ const SettingsPage = () => {
                       name="experience"
                       value={formData.experience}
                       onChange={handleChange}
-                      placeholder="Enter your Experience "
+                      placeholder="Enter your Experience"
                       className="w-full border border-gray-300 rounded-md p-2 mt-1"
-                    ></input>
-                    {errors.experience && (
-                      <p className="text-sm text-red-600">
-                        {errors.experience}
-                      </p>
-                    )}
+                    />
                   </div>
 
                   {/* area of interest */}
@@ -676,29 +533,26 @@ const SettingsPage = () => {
                       Area of Interest
                     </label>
                     <textarea
-                      type="text"
                       id="areaOfInterest"
-                      name="areaOfinterest"
+                      name="areaOfInterest"
                       rows="3"
-                      placeholder="Describe Your area of interest"
-                      value={formData.areaOfInterest}
-                      onChange={handleChange}
-                      
+                      value={formData.areaOfInterest} // Ensure it's controlled
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          areaOfInterest: e.target.value,
+                        })
+                      }
+                      placeholder="Describe your area of interest"
                       className="w-full border border-gray-300 rounded-md p-2 mt-1"
                     />
-                    {errors.areaOfInterest && (
-                      <p className="text-sm text-red-600">
-                        {errors.areaOfInterest}
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
 
               {/* Submit Button */}
               <div className="mt-8">
-                <button
-                 className="bg-blue-500 ml-96 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+                <button className="bg-blue-500 ml-96 text-white px-6 py-2 rounded-md hover:bg-blue-600">
                   Save Changes
                 </button>
               </div>

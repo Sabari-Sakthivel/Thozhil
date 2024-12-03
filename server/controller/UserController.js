@@ -152,7 +152,7 @@ const signin = asyncHandler(async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    res.json({ token, message: "Login successful" });
+    res.json({ token,user:user.username, message: "Login successful" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });

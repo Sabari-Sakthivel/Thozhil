@@ -139,12 +139,16 @@ const Register = () => {
     const result = await response.json();
 
     if (response.ok) {
+    
+      
       // Success handling (e.g., redirect to login)
       console.log("Registration successful:", result);
       // Redirect to login page
       navigate("/otpverify", {
-        state: { email: formData.email, name: formData.username }, // passing email in state
+        state: {  email: formData.email, username: formData.username  }, 
+        // passing email in state
       });
+      
     } else {
       // Error handling
       console.error("Registration failed:", result);

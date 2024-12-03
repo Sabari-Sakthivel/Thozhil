@@ -24,7 +24,7 @@ const router = createBrowserRouter([
   { path: "/", element:<PublicRoute element={<Login/>} />}, 
   { path: "/authentication/register", element:<PublicRoute element={<Register/>} />},
   { path: "/otpverify",element:<PublicRoute element={<OtpVerification/>} />},
-  { path: "/payment",element:<ProtectedRoute element={<PaymentIntegration/>} />},
+  { path: "/payment",element:<PaymentIntegration/>},
 
   // Protected Routes (PrivateRoute ensures authentication)
   {
