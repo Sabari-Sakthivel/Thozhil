@@ -1,8 +1,9 @@
-import React from "react";
+import React,{useState,useEffect} from "react";
 import { HiBriefcase } from "react-icons/hi";
 import { FaRegBookmark } from "react-icons/fa6";
 import { AiFillLike, AiFillDislike } from "react-icons/ai";
 import { Pie } from "react-chartjs-2";
+import axios from "axios"
 import {
   Chart as ChartJS,
   Title,
@@ -42,8 +43,42 @@ const OverviewContent = () => {
       },
     },
   };
+  // State to store the username and loading/error states
+  const [username, setUsername] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const username =localStorage
+  useEffect(() => {
+    const getUserDetails = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:4000/user/getuserdetails",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you're using a token for auth
+            },
+          }
+        );
+        console.log(response);
+
+        // If the response is successful, update the username
+        const data = response.data;
+        setUsername(data.username); // Update username state with fetched data
+
+        setLoading(false);
+      } catch (error) {
+        setError("Error fetching user details");
+        setLoading(false);
+      }
+    };
+
+    // Only call getUserDetails if the token exists in localStorage
+    if (localStorage.getItem("token")) {
+      getUserDetails();
+    } else {
+      setLoading(false); // If no token, no need to fetch user details
+    }
+  }, []);
 
   return (
     <div className="flex-grow scrollbar-hide">
@@ -51,7 +86,16 @@ const OverviewContent = () => {
       <div className="flex-grow">
         {/* Header */}
         <div>
-          <h2 className="text-2xl font-bold">  Hello,<span className="text-blue-600"> {username.username}</span></h2>
+          {loading ? (
+            <h2 className="text-2xl font-bold">Loading...</h2>
+          ) : error ? (
+            <h2 className="text-2xl font-bold text-red-600">{error}</h2>
+          ) : (
+            <h2 className="text-2xl font-bold">
+              Hello,
+              <span className="text-blue-600"> {username || "Guest"}</span>
+            </h2>
+          )}
           <p className="text-gray-600 mb-2 text-base">
             Here are your daily activities and job alerts.
           </p>

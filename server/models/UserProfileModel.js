@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const profileSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId, // Reference to the User model
+    ref: 'User',
+    required: true, // This links the profile to a specific user
+    unique: true, // Ensures each user has only one profile
+  }, 
   fullName: {
     type: String,
     required: true,

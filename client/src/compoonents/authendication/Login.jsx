@@ -133,15 +133,6 @@ const Login = () => {
 
             {/* Remember Me and Forgot Password */}
             <div className="flex justify-between items-center mt-4">
-              <label className="flex items-center text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
-                  className="mr-2 rounded border-gray-300 focus:ring-blue-500"
-                />
-                Remember Me
-              </label>
               <Link
                 to="/authendication/forgot-password"
                 className="text-sm text-blue-600 hover:underline"

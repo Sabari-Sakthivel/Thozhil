@@ -1,7 +1,13 @@
 const Profile = require("../models/UserProfileModel");
-
 const createOrUpdateProfile = async (req, res) => {
   try {
+     // Ensure userId is available
+    const userId = req.profile.userId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is missing from request" });
+    }
+
     const {
       fullName,
       dob,
@@ -17,15 +23,24 @@ const createOrUpdateProfile = async (req, res) => {
       nationality,
       areaOfInterest,
       experience,
-      
     } = req.body;
 
-    // Check if profile exists
-    let profile = await Profile.findOne({ email });
+    // Validate required fields
+    if (!email || !fullName) {
+      return res.status(400).json({ message: "Email and fullName are required" });
+    }
+
+    let profile = await Profile.findOne({ userId });
 
     if (!profile) {
-      // Create new profile
+      // Check if email exists before creating a new profile
+      const existingEmail = await Profile.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already in use by another user" });
+      }
+
       profile = new Profile({
+        userId,
         fullName,
         dob,
         gender,
@@ -40,7 +55,6 @@ const createOrUpdateProfile = async (req, res) => {
         nationality,
         areaOfInterest,
         experience,
-        
       });
       await profile.save();
       return res.status(201).json({ message: "Profile created successfully", profile });
@@ -52,6 +66,7 @@ const createOrUpdateProfile = async (req, res) => {
         gender,
         age,
         phone,
+        email,
         maritalStatus,
         address,
         skills,
@@ -60,7 +75,6 @@ const createOrUpdateProfile = async (req, res) => {
         nationality,
         areaOfInterest,
         experience,
-        
       });
       await profile.save();
       return res.status(200).json({ message: "Profile updated successfully", profile });
@@ -70,26 +84,36 @@ const createOrUpdateProfile = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({ message: "Duplicate email detected" });
     }
-    return res.status(500).json({ message: "Server error", error });
+    return res.status(500).json({ message: "Server error", error: error.message || error });
   }
 };
 
-// const getProfile = async (req, res) => {
-//   try {
-//     const { email } = req.params;
 
-//     // Find the profile by email
-//     const profile = await Profile.findOne({ email });
 
-//     if (!profile) {
-//       return res.status(404).json({ message: "Profile not found" });
-//     }
+const getProfileDetails = async (req, res) => {
+  try {
+    const userId = req.query.userId; 
+    console.log("Query Params:", req.query);
 
-//     return res.status(200).json({ profile });
-//   } catch (error) {
-//     console.error("Error in getProfile:", error);
-//     return res.status(500).json({ message: "Server error", error });
-//   }
-// };
+// Get user ID from query params
 
-module.exports = { createOrUpdateProfile};
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await Profile.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ id: user._id, email: user.email, fullName: user.username, phone: user.phone });
+  } catch (error) {
+    console.error("Error fetching profile details:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+
+module.exports = { createOrUpdateProfile,getProfileDetails };

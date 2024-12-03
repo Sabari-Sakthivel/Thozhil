@@ -1,12 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FaBell } from "react-icons/fa";
- // Import the useAuth hook
+import axios from 'axios';  // Import axios for the API call
 
 const Header = () => {
   const location = useLocation();
   
-const username=localStorage
+  // State to store the username and loading/error states
+  const [username, setUsername] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const getUserDetails = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/user/getuserdetails', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming you're using a token for auth
+          },
+        });
+        console.log(response);
+
+        // If the response is successful, update the username
+        const data = response.data;
+        setUsername(data.username); // Update username state with fetched data
+
+        setLoading(false);
+      } catch (error) {
+        setError('Error fetching user details');
+        setLoading(false);
+      }
+    };
+
+    // Only call getUserDetails if the token exists in localStorage
+    if (localStorage.getItem('token')) {
+      getUserDetails();
+    } else {
+      setLoading(false); // If no token, no need to fetch user details
+    }
+  }, []);  // Empty dependency array means this runs on mount
 
   // Function to check if the link is active
   const isActive = (path) => location.pathname === path;
@@ -41,9 +73,13 @@ const username=localStorage
 
             {/* Show username if user is logged in */}
             <div className="flex flex-col items-end">
-              { username ? (
+              {loading ? (
+                <p className="text-sm font-medium text-gray-500">Loading...</p>
+              ) : error ? (
+                <p className="text-sm font-medium text-red-500">{error}</p>
+              ) : username ? (
                 <p className="text-sm font-medium text-gray-700">
-                  {username.username} {/* Display the username */}
+                  {username} {/* Display the username */}
                 </p>
               ) : (
                 <p className="text-sm font-medium text-gray-500">Guest</p>

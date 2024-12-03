@@ -43,6 +43,7 @@ const registerUser = async (req, res) => {
 
     // Create a new user
     const user = new User({
+      
       username,
       email,
       phone,
@@ -149,10 +150,18 @@ const signin = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Password is incorrect" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "1h",
     });
-    res.json({ token,user:user.username, message: "Login successful" });
+    res.json({
+      token,
+      user: {
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+      },
+      message: "Login successful",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -165,7 +174,7 @@ const getUserDetails = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ id: user._id, email: user.email, role: user.role });
+    res.json({ id: user._id, email: user.email, username:user.username, phone:user.phone});
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -200,7 +209,7 @@ const resetpassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
 
   try {
-    const decoded = jwt.verify(token, process.env.KEY);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
     const user = await User.findById(decoded.id);
     user.password = password;
     await user.save();

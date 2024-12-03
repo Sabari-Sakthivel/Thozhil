@@ -27,6 +27,8 @@ router.post('/verify-otp', verifyOTP);
 // Route to sign in a user
 router.post('/login', signin);
 
+router.get('/getuserdetails',protectUser,getUserDetails)
+
 // Route to handle forgot password requests
 router.post('/forgot-password', forgotpassword);
 

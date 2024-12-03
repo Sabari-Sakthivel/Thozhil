@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
 import { useDropzone } from "react-dropzone";
 import { FaCloudDownloadAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -6,11 +6,15 @@ import { CgProfile } from "react-icons/cg";
 import { TbWorld } from "react-icons/tb";
 import { IoSettingsOutline } from "react-icons/io5";
 import axios from "axios";
+import SocialLinks from "./SocialLinks";
+import AccountSettings from "./AccountSettings"
 
 const SettingsPage = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [activeTab, setActiveTab] = useState("personal");
-  
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState('');
+
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -31,6 +35,35 @@ const SettingsPage = () => {
     areaOfInterest: "",
   });
 
+  // useEffect(() => {
+  //   const getUserDetails = async () => {
+  //     try {
+  //       const response = await axios.get('http://localhost:4000/user/getuserdetails', {
+  //         headers: {
+  //           'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming you're using a token for auth
+  //         },
+  //       });
+  //       // If response is successful, update the form data
+  //       const data = response.data;
+        
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         fullName: data.username || "", // Update with data if it exists
+  //         phone: data.phone || "",       // Update with data if it exists
+  //         email: data.email || "",       // Ensure email is also updated
+  //       }));
+  //       setLoading(false);
+  //     } catch (error) {
+  //       setError('Error fetching user details');
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   // Call the function when the component mounts
+  //   getUserDetails();
+  // }, []);
+
+  // Handle form field changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -38,10 +71,11 @@ const SettingsPage = () => {
     });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate form data (client-side validation)
+  
+    // Client-side validation
     if (
       !formData.fullName ||
       !formData.dob ||
@@ -62,64 +96,34 @@ const SettingsPage = () => {
       alert("Please fill out all required fields!");
       return;
     }
-
+  
     console.log("Form Data:", formData);
-
+  
+    // Send form data to the server
     try {
-      const requestData = {
-        ...formData, // Spread the form data here
-      };
-
-      // If profilePicture exists, add it separately
-      // if (profilePicture) {
-      //   const formPayload = new FormData();
-      //   Object.entries(requestData).forEach(([key, value]) => {
-      //     formPayload.append(key, value); // Append non-file data
-      //   });
-      //   formPayload.append("profilePicture", profilePicture); // Append file data
-
-      //   // Sending FormData if there's a file
-      //   const response = await axios.post(
-      //     "http://localhost:4000/userp/profile", // API endpoint
-      //     formPayload,
-      //     {
-      //       headers: {
-      //         "Content-Type": "multipart/form-data",
-      //       },
-      //     }
-      //   );
-      //   console.log("Profile saved successfully:", response.data);
-      //   alert("Profile saved successfully!");
-         
-      // } else {
-        // If no profile picture, send the data as JSON
-        const response = await axios.post(
-          "http://localhost:4000/userp/profile", // API endpoint
-          requestData, // Send form data as JSON
-          {
-            headers: {
-              "Content-Type": "application/json", // Content-Type as JSON for non-file data
-            },
-          }
-        );
-        console.log("Profile saved successfully:", response.data);
-        alert("Profile saved successfully!");
-      
+      const response = await axios.post(
+        "http://localhost:4000/userp/create-profile", // API endpoint
+        formData, // Send form data as JSON
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      console.log("Profile saved successfully:", response.data);
+      alert("Profile saved successfully!");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message;
+  
+      if (errorMessage.includes("Email already in use")) {
+        alert("The provided email is already associated with another account.");
+      } else {
+        alert(`Failed to save profile: ${errorMessage}`);
       }
-     catch (error) {
-      // Handle any errors
-      console.error(
-        "Error saving profile:",
-        error.response?.data || error.message
-      );
-      alert(
-        `Failed to save profile: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      console.error("Error saving profile:", error.response?.data || error.message);
     }
   };
-
+  
   // Handle drag-and-drop or manual file selection for profile picture
   const onDropProfile = (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -132,11 +136,19 @@ const SettingsPage = () => {
     maxFiles: 1,
     onDrop: onDropProfile,
   });
+  
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
+
+  // if (error) {
+  //   return <div>{error}</div>;
+  // }
 
   return (
     <div className="p-6 bg-gray-100 h-screen">
       <div className="bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-2xl font-semibold mb-6">Settings</h1>
+       
 
         {/* Header Section with Tabs */}
         <div className="mb-6">
@@ -182,6 +194,19 @@ const SettingsPage = () => {
             </Link>
           </div>
         </div>
+
+        {activeTab === "social" && (
+          <div>
+           
+            <SocialLinks/> {/* Render SocialLinks component */}
+          </div>
+        )}
+         {activeTab === "account" && (
+        <div>
+        
+          <AccountSettings /> {/* Render AccountSettings component */}
+        </div>
+      )}
 
         {/* Tab Content */}
         <div>

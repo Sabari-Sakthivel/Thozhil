@@ -1,15 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const { createOrUpdateProfile} = require("../controller/ProfileController");
+const { createOrUpdateProfile, getProfileDetails} = require("../controller/ProfileController");
+const authenticateUser = require("../middleware/AuthMiddleware");
 
 
 
 
 // Routes
 
-router.post("/profile",  createOrUpdateProfile);
+router.post("/create-profile",authenticateUser,  createOrUpdateProfile);
 
-// router.get("/profile/:email", getProfile);
+router.get("/getprofiledetails/:userid",authenticateUser, getProfileDetails);
 
 
 module.exports = router;
