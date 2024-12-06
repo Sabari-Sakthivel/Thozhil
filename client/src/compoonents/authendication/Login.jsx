@@ -27,35 +27,39 @@ const Login = () => {
     e.preventDefault();
     setError(""); // Clear previous errors
     setLoading(true); // Set loading state to true
-
+  
     // Validate Inputs
     if (!email || !password) {
       setError("Please fill in all fields.");
       setLoading(false);
       return;
     }
-
+  
     try {
       const response = await axios.post("http://localhost:4000/user/login", {
         email,
         password,
       });
-
+  
       if (response.data.token) {
         alert("Login successful!");
-        localStorage.setItem("username",response.data.user)
-        
+  
+        // Navigate to layout after successful login
         navigate("/layout");
-
-        // Store the token in localStorage
+  
+        // Store token and user data in localStorage or sessionStorage
         const storageMethod = rememberMe ? localStorage : sessionStorage;
-        storageMethod.setItem("token", response.data.token); // Save token
-
+        storageMethod.setItem("token", response.data.token);
+        storageMethod.setItem("user", JSON.stringify(response.data.user)); // Fixed: Correctly accessing user data
+  
         // Update the isAuthenticated state in AuthContext
         login(response.data.token);
+        console.log(localStorage.getItem("token")); // Logs the token
+console.log(JSON.parse(localStorage.getItem("user"))); // Logs the user object
+
       } else {
-        setError(response.data || "Invalid credentials.");
-        alert(response.data.message)
+        setError(response.data.message || "Invalid credentials.");
+        alert(response.data.message);
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -64,6 +68,8 @@ const Login = () => {
       setLoading(false); // Reset loading state
     }
   };
+  
+  
 
   return (
     <div className="min-h-screen flex">

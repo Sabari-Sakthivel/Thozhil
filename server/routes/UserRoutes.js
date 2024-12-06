@@ -10,9 +10,11 @@ const {
   getUserDetails,
   getAllUsers,
   deleteUser,
-  updateUserById
+  
+  updateProfile
 } = require('../controller/UserController');
 const { protectUser } = require('../middleware/UserMiddileware');
+const upload = require("../middleware/UploadsMiddleware");
 
 
 
@@ -29,6 +31,13 @@ router.post('/login', signin);
 
 router.get('/getuserdetails',protectUser,getUserDetails)
 
+
+// update the profile 
+router.put("/updateProfile",protectUser, updateProfile);
+
+// Route to update the profile (with file upload)
+router.put("/update-profile",protectUser,  upload.single("resume"), updateProfile);
+
 // Route to handle forgot password requests
 router.post('/forgot-password', forgotpassword);
 
@@ -39,7 +48,6 @@ router.post('/reset-password/:token', resetpassword);
 router.post('/resend-otp', resendOTP);
 router.get('/getAllUser', getAllUsers);
 router.delete('/delete/:id', deleteUser);
-router.put('/update/:id', updateUserById);
 
 
 
@@ -47,6 +55,6 @@ router.put('/update/:id', updateUserById);
 
 
 
-router.get('/me', protectUser, getUserDetails); // Protect this route with middleware
+ // Protect this route with middleware
 
 module.exports = router;

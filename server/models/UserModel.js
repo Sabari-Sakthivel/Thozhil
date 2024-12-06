@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs"); 
 
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -10,6 +11,13 @@ const userSchema = new mongoose.Schema(
       trim: true,
       minlength: 3,
       maxlength: 20,
+    },
+    dob: {
+      type: Date,
+    },
+
+    gender: {
+      type: String,
     },
     email: {
       type: String,
@@ -31,6 +39,47 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 8,
     },
+    maritalStatus: {
+      type: String,
+    },
+    address: {
+      type: String,
+      trim: true,
+      minlength: 10,
+      maxlength: 200,
+    },
+    skills: {
+      type: String, 
+    },
+    resume: { type: String }, 
+    jobRole: {
+      type: String,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+    graduationYear: {
+      type: Number,
+      min: 1900,
+      max: new Date().getFullYear(),
+    },
+    nationality: {
+      type: String,
+      trim: true,
+      minlength: 2,
+      maxlength: 50,
+    },
+    areaOfInterest: {
+      type: String,
+      trim: true,
+      minlength: 2,
+      maxlength: 100,
+    },
+    experience: {
+      type: Number,
+      min: 0, 
+      max: 50, 
+    },
     otp: {
       type: String,
       default: null, 
@@ -43,12 +92,33 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, 
     },
+    qualificationInput: { type: String, required: false }, 
     
   },
   {
     timestamps: true,
   }
 );
+// Virtual field for calculating age based on dob
+userSchema.virtual("age").get(function () {
+  const today = new Date();
+  const birthDate = new Date(this.dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  // If the user hasn't had their birthday this year yet, subtract 1 from age
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+
+  return age;
+});
+
+// Ensure virtual fields are included in JSON output
+userSchema.set("toJSON", {
+  virtuals: true,
+});
+
 
 // Hash password before saving to the database
 userSchema.pre("save", async function (next) {

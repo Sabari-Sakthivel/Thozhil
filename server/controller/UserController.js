@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const verifyEmailTemplate = require("../Email Template/VerifyEmailTemplate");
 const sendEmail = require("../utils/EmailService");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
 
 const generateOTP = () => crypto.randomInt(1000, 9999).toString();
 
@@ -43,7 +45,6 @@ const registerUser = async (req, res) => {
 
     // Create a new user
     const user = new User({
-      
       username,
       email,
       phone,
@@ -73,7 +74,7 @@ const registerUser = async (req, res) => {
 
 const verifyOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;
-console.log(req.body)
+  console.log(req.body);
   try {
     // Find user by email
     const user = await User.findOne({ email });
@@ -159,6 +160,7 @@ const signin = asyncHandler(async (req, res) => {
         username: user.username,
         email: user.email,
         phone: user.phone,
+        id: user._id,
       },
       message: "Login successful",
     });
@@ -170,15 +172,142 @@ const signin = asyncHandler(async (req, res) => {
 
 const getUserDetails = async (req, res) => {
   try {
+    // Find the user by ID (from JWT token or session)
     const user = await User.findById(req.user.id).select("-password");
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({ id: user._id, email: user.email, username:user.username, phone:user.phone});
+
+    // Construct response object
+    const userDetails = {
+      id: user._id,
+      email: user.email,
+      phone: user.phone,
+      username: user.username,
+      dob: user.dob,
+      age: user.age,
+      gender: user.gender,
+      maritalStatus: user.maritalStatus,
+      address: user.address,
+      qualificationInput: user.qualificationInput,
+      jobRole: user.jobRole,
+      experience: user.experience,
+      nationality: user.nationality,
+      graduationYear: user.graduationYear,
+      skills: user.skills,
+      resume: user.resume ? user.resume : null,
+      areaOfInterest: user.areaOfInterest,
+    };
+
+   
+
+    // If resume exists, return the file path or URL (you may need to adjust depending on storage)
+    if (user.resume) {
+      // Assuming user.resume stores the file path or URL to the file
+      userDetails.resume = user.resume;
+    } else {
+      userDetails.resume = null; // Ensure null if no resume exists
+    }
+
+    // Send the response with the user details
+    res.json(userDetails);
+
+    console.log(user); // Log user data to verify
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error", error });
   }
 };
+const updateProfile = asyncHandler(async (req, res) => {
+  const userId = req.user.id; // Extract user ID from token
+  const updates = req.body;
+
+  try {
+    // Fetch the current user's profile
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Handle resume file upload
+    if (req.file) {
+      if (user.resume) {
+        const oldResumePath = path.join(__dirname, "..", user.resume);
+
+        // Check if the old resume file exists
+        if (fs.existsSync(oldResumePath)) {
+          fs.unlinkSync(oldResumePath);
+        }
+      }
+
+      updates.resume = req.file.path;
+    }
+
+    // Check if the profile is already complete
+    const requiredFields = [
+      "username",
+      "phone",
+      "dob",
+      "gender",
+      "maritalStatus",
+      "address",
+      "skills",
+      "jobRole",
+      "areaOfInterest",
+      "experience",
+      "nationality",
+      "graduationYear",
+      "qualificationInput",
+    ];
+    const isProfileComplete = requiredFields.every((field) => user[field]);
+
+    if (!isProfileComplete) {
+      // First-time profile update
+      const missingFields = requiredFields.filter((field) => !updates[field]);
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `First-time profile completion requires all fields: ${missingFields.join(", ")}`,
+        });
+      }
+    } else {
+      // Check if `email` is being updated
+      if (updates.email && updates.email !== user.email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email cannot be updated.",
+        });
+      }
+    }
+
+    // Apply updates
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: isProfileComplete
+        ? "Profile updated successfully."
+        : "Profile completed successfully.",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
+  }
+});
+
 
 const forgotpassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
@@ -281,26 +410,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const updateUserById = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const updates = req.body;
-
-    const updatedUser = await User.findByIdAndUpdate(id, updates, {
-      new: true,
-    });
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
 module.exports = {
   verifyOTP,
   registerUser,
@@ -309,7 +418,7 @@ module.exports = {
   resetpassword,
   resendOTP,
   getUserDetails,
+  updateProfile,
   getAllUsers,
   deleteUser,
-  updateUserById,
 };
