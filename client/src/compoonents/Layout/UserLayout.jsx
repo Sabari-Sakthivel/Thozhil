@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Header from "../../pages/Header";
-import Footer from "../../pages/Footer";
-import Sidebar from "../../pages/Dashboard pages/Sidebar";
+import Header from "../../UserPages/Header";
+import Footer from "../../UserPages/Footer";
+import Sidebar from "../../UserPages/Dashboard pages/Sidebar";
 
 const Layout = () => {
   const location = useLocation();

@@ -359,7 +359,7 @@ const JobSearchComponent = () => {
             <p className="text-gray-500 text-sm">{job.location}</p>
             <p className="text-gray-800 font-medium mt-2">{job.salary}</p>
             <Link
-              to="findjob/jobdescription"
+              to="jobdescription"
               className="mt-4 inline-block bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
             >
               Apply Now

@@ -1,30 +1,32 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../compoonents/authendication/Login";
 import Register from "../compoonents/authendication/Register";
-import Layout from "../compoonents/Layout/Layout";
-import FindJob from "../pages/Findjob";
-import FindEmployers from "../pages/FindEmployers";
-import JobDescription from "../pages/JobDescription";
-import PaymentIntegration from "../pages/PaymentIntegration";
+import Layout from "../compoonents/Layout/UserLayout";
+import FindJob from "../UserPages/Findjob";
+import FindEmployers from "../UserPages/FindEmployers";
+import JobDescription from "../UserPages/JobDescription";
+import PaymentIntegration from "../UserPages/PaymentIntegration";
 import OtpVerification from "../compoonents/authendication/OtpVerify";
 
 // import Dashboard from "../pages/DashboardLayout";
-import AppliedJobs from "../pages/Dashboard pages/AppliedJobs";
-import SavedJobs from "../pages/Dashboard pages/SavedJobs";
-import ApplicationTracking from "../pages/Dashboard pages/ApplicationTracking";
-import JobAlerts from "../pages/JobAlerts";
-import SettingsPage from "../pages/Dashboard pages/Settings";
-import OverviewContent from "../pages/Dashboard pages/Overview";
+import AppliedJobs from "../UserPages/Dashboard pages/AppliedJobs";
+import SavedJobs from "../UserPages/Dashboard pages/SavedJobs";
+import ApplicationTracking from "../UserPages/Dashboard pages/ApplicationTracking";
+import JobAlerts from "../UserPages/JobAlerts";
+import SettingsPage from "../UserPages/Dashboard pages/Settings";
+import OverviewContent from "../UserPages/Dashboard pages/Overview";
 import PublicRoute from "../Utils/BublicRoute";
 import ProtectedRoute from "../Utils/PrivateRoute";
+import Landingpage from "../compoonents/authendication/Landingpage";
 
 // Define routes
 const router = createBrowserRouter([
   // Authentication Routes
-  { path: "/", element:<PublicRoute element={<Login/>} />}, 
+  { path: "/login", element:<PublicRoute element={<Login/>} />}, 
   { path: "/authentication/register", element:<PublicRoute element={<Register/>} />},
   { path: "/otpverify",element:<PublicRoute element={<OtpVerification/>} />},
   { path: "/payment",element:<PaymentIntegration/>},
+  { path: "/",element:<Landingpage/>},
 
   // Protected Routes (PrivateRoute ensures authentication)
   {

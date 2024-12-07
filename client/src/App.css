@@ -36,3 +36,20 @@
     transform: rotate(360deg);
   }
 }
+@keyframes wave {
+  0% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(1.5);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.animate-wave {
+  animation: wave 1s infinite;
+  transform-origin: center;
+}
+

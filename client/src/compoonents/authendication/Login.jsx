@@ -4,7 +4,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Loginimg from "../../assets/Login-img.png";
-import { useAuth } from "../../pages/contextApi/AuthContext"; // Import AuthContext
+import { useAuth } from "../../UserPages/contextApi/AuthContext"; // Import AuthContext
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -40,35 +40,29 @@ const Login = () => {
         email,
         password,
       });
-  
-      if (response.data.token) {
+    
+      if (response.data && response.data.token) {
         alert("Login successful!");
-  
+    
         // Navigate to layout after successful login
         navigate("/layout");
-  
-        // Store token and user data in localStorage or sessionStorage
+    
+        // Store token and user data
         const storageMethod = rememberMe ? localStorage : sessionStorage;
         storageMethod.setItem("token", response.data.token);
-        storageMethod.setItem("user", JSON.stringify(response.data.user)); // Fixed: Correctly accessing user data
-  
-        // Update the isAuthenticated state in AuthContext
+        storageMethod.setItem("user", JSON.stringify(response.data.user));
+    
         login(response.data.token);
-        console.log(localStorage.getItem("token")); // Logs the token
-console.log(JSON.parse(localStorage.getItem("user"))); // Logs the user object
-
       } else {
-        setError(response.data.message || "Invalid credentials.");
-        alert(response.data.message);
+        const errorMessage = response.data?.message || "Invalid credentials.";
+        setError(errorMessage);
+        alert(errorMessage);
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
-      console.error("Login error:", err);
-    } finally {
-      setLoading(false); // Reset loading state
+      console.error("Login error:", err.message);
     }
-  };
-  
+  }
   
 
   return (

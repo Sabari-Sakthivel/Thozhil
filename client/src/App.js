@@ -1,7 +1,8 @@
 import React from "react";
 import { RouterProvider } from "react-router-dom";
-import { AuthProvider } from "./pages/contextApi/AuthContext"; // Import AuthProvider
-import router from "./Routes/routes"; // Import your router
+import { AuthProvider } from "./UserPages/contextApi/AuthContext"; 
+import router from "./Routes/routes";
+import './App.css'; 
 
 function App() {
   return (

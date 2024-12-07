@@ -1,12 +1,21 @@
-import React from "react";
-import { FiLayers, FiBookmark, FiBell, FiSettings, FiUsers, FiBriefcase as FiJobs, FiMapPin } from "react-icons/fi";
+import React, { useState } from "react";
+import {
+  FiLayers,
+  FiBookmark,
+  FiBell,
+  FiSettings,
+  FiUsers,
+  FiBriefcase as FiJobs,
+  FiMapPin,
+} from "react-icons/fi";
 import { HiBriefcase } from "react-icons/hi";
 import { LuLogOut } from "react-icons/lu";
-import { useNavigate, useLocation } from "react-router-dom"; 
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const location = useLocation(); 
+  const location = useLocation();
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false); // State for logout popup
 
   const menuItems = [
     { id: "dashboard", icon: <FiLayers size={22} />, label: "Dashboard", path: "/layout" },
@@ -20,8 +29,10 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
+    console.log("Logout confirmed."); // Debugging log
     localStorage.removeItem("token");
-    navigate("/"); 
+    setIsLogoutOpen(false); // Close popup
+    navigate("/");
   };
 
   return (
@@ -36,7 +47,7 @@ const Sidebar = () => {
                   ? "bg-blue-200 text-blue-500"
                   : "hover:bg-blue-200 hover:text-blue-500 text-gray-500"
               }`}
-              onClick={() => navigate(item.path)} 
+              onClick={() => navigate(item.path)}
             >
               <span>{item.icon}</span>
               {item.label}
@@ -44,9 +55,8 @@ const Sidebar = () => {
           ))}
         </ul>
         <div className="mt-auto w-full">
-          
           <button
-            onClick={handleLogout}
+            onClick={() => setIsLogoutOpen(true)} // Open popup
             className="w-full flex items-center gap-3 py-2 px-4 text-gray-500 rounded hover:bg-blue-200 hover:text-blue-500 cursor-pointer"
           >
             <LuLogOut size={22} />
@@ -54,6 +64,32 @@ const Sidebar = () => {
           </button>
         </div>
       </nav>
+
+      {/* Logout Confirmation Popup */}
+      {isLogoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-semibold text-gray-800">Confirm Logout</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Are you sure you want to log out?
+            </p>
+            <div className="mt-4 flex justify-end space-x-3">
+              <button
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                onClick={() => setIsLogoutOpen(false)} // Close popup
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600"
+                onClick={handleLogout} // Confirm logout
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

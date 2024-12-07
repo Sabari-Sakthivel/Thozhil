@@ -36,8 +36,16 @@ router.get('/getuserdetails',protectUser,getUserDetails)
 router.put("/updateProfile",protectUser, updateProfile);
 
 // Route to update the profile (with file upload)
-router.put("/update-profile",protectUser,  upload.single("resume"), updateProfile);
-
+// router.put("/update-profile",protectUser,  upload.single("resume"), updateProfile);
+router.put(
+  "/update-profile",
+  protectUser,
+  upload.fields([
+    { name: "resume", maxCount: 1 }, // Handle resume file upload
+    { name: "profilePicture", maxCount: 1 }, // Handle profile picture file upload
+  ]),
+  updateProfile
+); 
 // Route to handle forgot password requests
 router.post('/forgot-password', forgotpassword);
 
