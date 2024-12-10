@@ -1,71 +1,35 @@
 import React, { useState } from "react";
 import {
-  FiLayers,
   FiBookmark,
-  FiBell,
   FiSettings,
-  FiBriefcase as FiJobs,
-  FiMapPin,
 } from "react-icons/fi";
-import { HiBriefcase } from "react-icons/hi";
+import { HiUser } from "react-icons/hi";
 import { LuLogOut } from "react-icons/lu";
 import { useNavigate, useLocation } from "react-router-dom";
+import { MdOutlineDashboard } from "react-icons/md";
+import { FiPlusCircle } from "react-icons/fi";
+import { IoBriefcaseOutline } from "react-icons/io5";
 
-const Sidebar = () => {
+const EmployerSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false); // State for logout popup
 
+  // Employer-specific menu items
   const menuItems = [
-    {
-      id: "dashboard",
-      icon: <FiLayers size={22} />,
-      label: "Dashboard",
-      path: "/candidatelayout",
-    },
-    {
-      id: "Jobs",
-      icon: <FiJobs size={22} />,
-      label: "Jobs",
-      path: "/candidatelayout/findjob",
-    },
-    {
-      id: "AppliedJobs",
-      icon: <HiBriefcase size={22} />,
-      label: "Applied Applications",
-      path: "/candidatelayout/appliedjobs",
-    },
-    {
-      id: "SavedJobs",
-      icon: <FiBookmark size={22} />,
-      label: "Saved Applications",
-      path: "/candidatelayout/savedjobs",
-    },
-    {
-      id: "ApplicationTracking",
-      icon: <FiMapPin size={22} />,
-      label: "Application Tracking",
-      path: "/candidatelayout/applicationtracking",
-    },
-    {
-      id: "JobAlerts",
-      icon: <FiBell size={22} />,
-      label: "Job Alerts",
-      path: "/candidatelayout/jobalerts",
-    },
-    {
-      id: "Settings",
-      icon: <FiSettings size={22} />,
-      label: "Settings",
-      path: "/candidatelayout/settings",
-    },
+    { id: "overview", icon: <MdOutlineDashboard size={22} />, label: "Dashboard", path: "/EmployerDashboard" },
+    { id: "profile", icon: <HiUser size={22} />, label: "Profile", path: "/EmployerDashboard/employerprofile" },
+    { id: "postjob", icon: <FiPlusCircle size={22} />, label: "Post a Job", path: "/EmployerDashboard/postjob" },
+    { id: "myjobs", icon: <IoBriefcaseOutline size={22} />, label: "My Jobs", path: "/EmployerDashboard/myjobs" },
+    { id: "savedcandidates", icon: <FiBookmark size={22} />, label: "Saved Candidates", path: "/EmployerDashboard/savedcandidates" },
+    { id: "settings", icon: <FiSettings size={22} />, label: "Settings", path: "/EmployerDashboard/employersettings" },
   ];
 
   const handleLogout = () => {
     console.log("Logout confirmed.");
     localStorage.removeItem("token");
     setIsLogoutOpen(false); // Close popup
-    navigate("/");
+    navigate("/"); // Navigate to the home page or login page after logout
   };
 
   return (
@@ -77,8 +41,8 @@ const Sidebar = () => {
               key={item.id}
               className={`py-2 px-4 flex items-center gap-3 rounded cursor-pointer ${
                 location.pathname === item.path
-                  ? "bg-blue-200 text-blue-500 border-l-4 border-blue-500" // Active item with blue line
-                  : "hover:bg-blue-200 hover:text-blue-500 text-gray-500" // Hover effect without blue line
+                  ? "bg-blue-200 text-blue-500 border-l-4 border-blue-500"
+                  : "hover:bg-blue-200 hover:text-blue-500 text-gray-500"
               }`}
               onClick={() => navigate(item.path)}
             >
@@ -108,9 +72,7 @@ const Sidebar = () => {
       {isLogoutOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Confirm Logout
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-800">Confirm Logout</h2>
             <p className="mt-2 text-sm text-gray-600">
               Are you sure you want to log out?
             </p>
@@ -135,4 +97,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default EmployerSidebar;

@@ -60,7 +60,7 @@ const Login = () => {
             navigate("/candidatelayout");
             break;
           case "employer":
-            navigate("/employer/dashboard");
+            navigate("/EmployerDashboard");
             break;
           case "admin":
             navigate("/admin/dashboard");
