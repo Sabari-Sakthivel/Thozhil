@@ -93,8 +93,13 @@ const userSchema = new mongoose.Schema(
       default: false, 
     },
     qualificationInput: { type: String, required: false }, 
-    
+    role: {
+      type: String,
+      enum: ["candidate", "employer", "admin"],
+      default: "candidate", 
+    },
   },
+ 
   {
     timestamps: true,
   }

@@ -7,8 +7,8 @@ const RazorpayPayment = () => {
   console.log("Email:", email, "Username:", username);
   const [formData, setFormData] = useState({
     amount: "1060",
-    username: username || "",  // Initialize with username from location state
-    email: email || "",         // Initialize with email from location state
+    username: username || "",  
+    email: email || "",        
   });
 
   useEffect(() => {
@@ -42,16 +42,16 @@ const RazorpayPayment = () => {
       razorpay_payment_id: "6sBc16Kf21Jh8tZ3onmDSLxF",
       amount: parseInt(formData.amount) * 100, 
       currency: "INR",
-      name: formData.username,  // Use username here
+      name: formData.username,  
       description: "Test Transaction",
       image: "https://example.com/your_logo", 
       handler: function (response) {
         alert(`Payment Successful! Payment ID: ${response.razorpay_payment_id}`);
-        navigate("/");
+        navigate("/login");
       },
       prefill: {
-        name: formData.username,  // Use username here
-        email: formData.email,     // Use email here
+        name: formData.username,  
+        email: formData.email,    
       },
       notes: {
         address: "Corporate Office",

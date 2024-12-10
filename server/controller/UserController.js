@@ -12,63 +12,96 @@ const generateOTP = () => crypto.randomInt(1000, 9999).toString();
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, phone, password } = req.body;
+    const { username, email, phone, password, role = "candidate" } = req.body;
 
-    // Generate OTP and set creation time
-    const otp = generateOTP();
-    const otpCreatedAt = new Date();
+    // Validate input fields
+    if (!username || !email || !phone || !password) {
+      return res
+        .status(400)
+        .json({
+          error: "All fields (username, email, phone, password) are required.",
+        });
+    }
 
-    // Check if the user already exists
+    // Validate role
+    const validRoles = ["candidate", "employer", "admin"];
+    if (!validRoles.includes(role)) {
+      return res
+        .status(400)
+        .json({
+          error: `Invalid role specified. Valid roles: ${validRoles.join(
+            ", "
+          )}.`,
+        });
+    }
+
+    // Restrict admin registration through public API
+    if (role === "admin") {
+      return res
+        .status(403)
+        .json({ error: "Admins cannot register via public registration." });
+    }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       if (!existingUser.isVerified) {
-        // If user exists but is not verified, resend OTP
+        // If the user is not verified, resend OTP
+        const otp = generateOTP();
         existingUser.otp = otp;
-        existingUser.otpCreatedAt = otpCreatedAt;
+        existingUser.otpCreatedAt = new Date();
         await existingUser.save();
 
-        // Send verification email
         await sendEmail(
           existingUser.email,
           "Email verification",
-          verifyEmailTemplate(otp, existingUser.username) // Assuming username exists in the document
+          verifyEmailTemplate(otp, existingUser.username)
         );
-        return res.json({
-          message: `OTP sent to registered email ${existingUser.email}`,
+
+        return res.status(200).json({
+          message: `User already exists but is not verified. OTP has been resent to ${existingUser.email}.`,
         });
       } else {
-        // If user is already verified
         return res.status(400).json({ error: "Email already registered." });
       }
     }
 
-    // Create a new user
-    const user = new User({
+    // Generate OTP
+    const otp = generateOTP();
+    const otpCreatedAt = new Date();
+
+    // Create new user
+    const newUser = new User({
       username,
       email,
       phone,
       password,
+      role,
       otp,
       otpCreatedAt,
-      isVerified: false, // Set isVerified to false initially
+      isVerified: false,
     });
 
-    await user.save();
+    await newUser.save();
 
     // Send verification email
     await sendEmail(
-      user.email,
+      newUser.email,
       "Email verification",
       verifyEmailTemplate(otp, username)
     );
 
+    // Send response
     res.status(201).json({
-      message: `User registered successfully. OTP sent to email ${user.email}`,
+      message: `User registered successfully as ${role}. OTP has been sent to ${email}.`,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error. Please try again later." });
+    console.error("Error during user registration:", error);
+
+    res.status(500).json({
+      error: "Server error. Please try again later.",
+      details: error.message, // Optional: Include error details for debugging
+    });
   }
 };
 
@@ -139,6 +172,7 @@ const signin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Find user by email
     const user = await User.findOne({ email });
     if (!user || !user.isVerified) {
       return res
@@ -146,14 +180,22 @@ const signin = asyncHandler(async (req, res) => {
         .json({ message: "User not registered or not verified" });
     }
 
+    // Validate password
     const validPassword = await user.matchPassword(password);
     if (!validPassword) {
       return res.status(400).json({ message: "Password is incorrect" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1h",
-    });
+    // Generate token with role
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    // Send response with role and token
     res.json({
       token,
       user: {
@@ -161,8 +203,9 @@ const signin = asyncHandler(async (req, res) => {
         email: user.email,
         phone: user.phone,
         id: user._id,
+        role: user.role,
       },
-      message: "Login successful",
+      message: `Login Successful as ${user.role}`,
     });
   } catch (error) {
     console.error(error);
@@ -199,8 +242,6 @@ const getUserDetails = async (req, res) => {
       resume: user.resume ? user.resume : null,
       areaOfInterest: user.areaOfInterest,
     };
-
-   
 
     // If resume exists, return the file path or URL (you may need to adjust depending on storage)
     if (user.resume) {
@@ -272,7 +313,9 @@ const updateProfile = asyncHandler(async (req, res) => {
       if (missingFields.length > 0) {
         return res.status(400).json({
           success: false,
-          message: `First-time profile completion requires all fields: ${missingFields.join(", ")}`,
+          message: `First-time profile completion requires all fields: ${missingFields.join(
+            ", "
+          )}`,
         });
       }
     } else {
@@ -307,7 +350,6 @@ const updateProfile = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 const forgotpassword = asyncHandler(async (req, res) => {
   const { email } = req.body;

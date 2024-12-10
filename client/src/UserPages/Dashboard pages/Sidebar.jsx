@@ -4,7 +4,6 @@ import {
   FiBookmark,
   FiBell,
   FiSettings,
-  FiUsers,
   FiBriefcase as FiJobs,
   FiMapPin,
 } from "react-icons/fi";
@@ -18,14 +17,13 @@ const Sidebar = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false); // State for logout popup
 
   const menuItems = [
-    { id: "dashboard", icon: <FiLayers size={22} />, label: "Dashboard", path: "/layout" },
-    { id: "Jobs", icon: <FiJobs size={22} />, label: "Jobs", path: "/layout/findjob" },
-    { id: "FindEmployers", icon: <FiUsers size={22} />, label: "Find Employers", path: "/layout/findemployers" },
-    { id: "AppliedJobs", icon: <HiBriefcase size={22} />, label: "Applied Applications", path: "/layout/appliedjobs" },
-    { id: "SavedJobs", icon: <FiBookmark size={22} />, label: "Saved Applications", path: "/layout/savedjobs" },
-    { id: "ApplicationTracking", icon: <FiMapPin size={22} />, label: "Application Tracking", path: "/layout/applicationtracking" },
-    { id: "JobAlerts", icon: <FiBell size={22} />, label: "Job Alerts", path: "/layout/jobalerts" },
-    { id: "Settings", icon: <FiSettings size={22} />, label: "Settings", path: "/layout/settings" },
+    { id: "dashboard", icon: <FiLayers size={22} />, label: "Dashboard", path: "/candidatelayout" },
+    { id: "Jobs", icon: <FiJobs size={22} />, label: "Jobs", path: "/candidatelayout/findjob" },
+    { id: "AppliedJobs", icon: <HiBriefcase size={22} />, label: "Applied Applications", path: "/candidatelayout/appliedjobs" },
+    { id: "SavedJobs", icon: <FiBookmark size={22} />, label: "Saved Applications", path: "/candidatelayout/savedjobs" },
+    { id: "ApplicationTracking", icon: <FiMapPin size={22} />, label: "Application Tracking", path: "/candidatelayout/applicationtracking" },
+    { id: "JobAlerts", icon: <FiBell size={22} />, label: "Job Alerts", path: "/candidatelayout/jobalerts" },
+    { id: "Settings", icon: <FiSettings size={22} />, label: "Settings", path: "/candidatelayout/settings" },
   ];
 
   const handleLogout = () => {

@@ -1,9 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import Login from "../compoonents/authendication/Login";
 import Register from "../compoonents/authendication/Register";
-import Layout from "../compoonents/Layout/UserLayout";
 import FindJob from "../UserPages/Findjob";
-import FindEmployers from "../UserPages/FindEmployers";
 import JobDescription from "../UserPages/JobDescription";
 import PaymentIntegration from "../UserPages/PaymentIntegration";
 import OtpVerification from "../compoonents/authendication/OtpVerify";
@@ -18,6 +16,7 @@ import OverviewContent from "../UserPages/Dashboard pages/Overview";
 import PublicRoute from "../Utils/BublicRoute";
 import ProtectedRoute from "../Utils/PrivateRoute";
 import Landingpage from "../compoonents/authendication/Landingpage";
+import Candidatelayout from "../compoonents/Layout/candidatelayout";
 
 // Define routes
 const router = createBrowserRouter([
@@ -30,14 +29,13 @@ const router = createBrowserRouter([
 
   // Protected Routes (PrivateRoute ensures authentication)
   {
-    path: "/layout",
-    element: <ProtectedRoute><Layout /></ProtectedRoute>,
+    path: "/candidatelayout",
+    element: <ProtectedRoute><Candidatelayout/></ProtectedRoute>,
     children: [
        
        // Main Dashboard page
       { index: true,  element: <OverviewContent /> },
       { path: "findjob", element: <FindJob /> },
-      { path: "findemployers", element: <FindEmployers /> },
       { path: "findjob/jobdescription", element: <JobDescription /> },
       { path: "appliedjobs", element: <AppliedJobs /> },
       { path: "savedjobs", element: <SavedJobs /> },

@@ -4,8 +4,6 @@ import { FaSearch, FaMapMarkerAlt } from "react-icons/fa";
 import { FaArrowRightLong, FaArrowLeftLong } from "react-icons/fa6";
 import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 
-
-
 //Dummy data with varied jobs.........
 const jobs = [
   {
@@ -230,7 +228,7 @@ const JobSearchComponent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [savedJobs, setSavedJobs] = useState([]); 
+  const [savedJobs, setSavedJobs] = useState([]);
   const jobsPerPage = 9;
 
   const popularSearches = [
@@ -266,7 +264,6 @@ const JobSearchComponent = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       {/* Search Inputs */}
@@ -329,44 +326,76 @@ const JobSearchComponent = () => {
 
       {/* Job Listings */}
       <h2 className="text-2xl font-bold mb-4">Job Listings</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {currentJobs.map((job) => (
-          <div
-            key={job.id}
-            className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition relative"
-          >
-            <button
-              onClick={() => toggleSaveJob(job.id)}
-              className="absolute bottom-7 right-10 text-gray-400 hover:text-blue-500"
+      {currentJobs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {currentJobs.map((job) => (
+            <div
+              key={job.id}
+              className="bg-white shadow-md rounded-lg p-4 hover:shadow-lg transition relative"
             >
-              {savedJobs.includes(job.id) ? <FaBookmark /> : <FaRegBookmark />}
-            </button>
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg">{job.title}</h3>
-              <span
-                className={`text-sm font-medium px-2 py-1 rounded ${
-                  job.type === "FULL-TIME"
-                    ? "bg-green-100 text-green-700"
-                    : job.type === "PART-TIME"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : "bg-blue-100 text-blue-700"
-                }`}
+              <button
+                onClick={() => toggleSaveJob(job.id)}
+                className="absolute bottom-7 right-10 text-gray-400 hover:text-blue-500"
               >
-                {job.type}
-              </span>
+                {savedJobs.includes(job.id) ? (
+                  <FaBookmark />
+                ) : (
+                  <FaRegBookmark />
+                )}
+              </button>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg">{job.title}</h3>
+                <span
+                  className={`text-sm font-medium px-2 py-1 rounded ${
+                    job.type === "FULL-TIME"
+                      ? "bg-green-100 text-green-700"
+                      : job.type === "PART-TIME"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  {job.type}
+                </span>
+              </div>
+              <p className="text-gray-500">{job.company}</p>
+              <p className="text-gray-500 text-sm">{job.location}</p>
+              <p className="text-gray-800 font-medium mt-2">{job.salary}</p>
+              <Link
+                to="jobdescription"
+                className="mt-4 inline-block bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
+              >
+                Apply Now
+              </Link>
             </div>
-            <p className="text-gray-500">{job.company}</p>
-            <p className="text-gray-500 text-sm">{job.location}</p>
-            <p className="text-gray-800 font-medium mt-2">{job.salary}</p>
-            <Link
-              to="jobdescription"
-              className="mt-4 inline-block bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
-            >
-              Apply Now
-            </Link>
+          ))}
+        </div>
+      ) : (
+        // Suggestion Box When No Jobs Are Found
+        <div className="bg-white shadow-md rounded-lg p-6 mt-4 text-center">
+          <h3 className="text-xl font-semibold text-gray-700">
+            No jobs found based on your search.
+          </h3>
+          <p className="text-gray-500 mt-2">
+            Try adjusting your search criteria or explore these popular
+            searches:
+          </p>
+          <div className="flex flex-wrap gap-2 mt-4 justify-center">
+            {popularSearches.map((search, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setSearchTerm(search);
+                  setLocation("");
+                  setCurrentPage(1);
+                }}
+                className="bg-gray-200 text-sm rounded-lg px-4 py-2 hover:bg-gray-300"
+              >
+                {search}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex justify-center mt-6">

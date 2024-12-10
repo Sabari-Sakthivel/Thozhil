@@ -4,17 +4,19 @@ import Header from "../../UserPages/Header";
 import Footer from "../../UserPages/Footer";
 import Sidebar from "../../UserPages/Dashboard pages/Sidebar";
 
-const Layout = () => {
+const CandidateLayout = () => { // Renamed the component to start with an uppercase letter
   const location = useLocation();
-  const noFooterRoutes = ["/layout", "/layout/dashboard"];  
-  const hideFooter = noFooterRoutes.some(route => location.pathname.startsWith(route));
+  const noFooterRoutes = ["/candidatelayout", "/candidatelayout/dashboard"];
+  const hideFooter = noFooterRoutes.some(route =>
+    location.pathname.startsWith(route)
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Always render Header */}
       <Header />
-      <Sidebar/>
-    
+      <Sidebar />
+      
       {/* Main Content */}
       <main className="flex-1 ml-64 px-5 pt-5">
         <Outlet />
@@ -26,4 +28,4 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default CandidateLayout;

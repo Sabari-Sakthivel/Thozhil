@@ -4,7 +4,7 @@ import { FaArrowRightLong } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Loginimg from "../../assets/Login-img.png";
-import { useAuth } from "../../UserPages/contextApi/AuthContext"; // Import AuthContext
+import { useAuth } from "../../UserPages/contextApi/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const { login } = useAuth(); // Destructure the login function from context
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   // Toggle Password Visibility
@@ -25,34 +25,49 @@ const Login = () => {
   // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
-    setLoading(true); // Set loading state to true
-  
+    setError("");
+    setLoading(true);
+
     // Validate Inputs
     if (!email || !password) {
       setError("Please fill in all fields.");
       setLoading(false);
       return;
     }
-  
+
     try {
       const response = await axios.post("http://localhost:4000/user/login", {
         email,
         password,
       });
-    
-      if (response.data && response.data.token) {
-        alert("Login successful!");
-    
-        // Navigate to layout after successful login
-        navigate("/layout");
-    
+
+      if (response.data && response.data.token && response.data.user) {
+        const { token, user } = response.data;
+
         // Store token and user data
         const storageMethod = rememberMe ? localStorage : sessionStorage;
-        storageMethod.setItem("token", response.data.token);
-        storageMethod.setItem("user", JSON.stringify(response.data.user));
-    
-        login(response.data.token);
+        storageMethod.setItem("token", token);
+        storageMethod.setItem("user", JSON.stringify(user));
+
+        // Set token in AuthContext
+        login(token);
+
+        alert(`Login successful as ${user.role}!`);
+
+        // Navigate based on user role
+        switch (user.role) {
+          case "candidate":
+            navigate("/candidatelayout");
+            break;
+          case "employer":
+            navigate("/employer/dashboard");
+            break;
+          case "admin":
+            navigate("/admin/dashboard");
+            break;
+          default:
+            navigate("/dashboard"); // Default route
+        }
       } else {
         const errorMessage = response.data?.message || "Invalid credentials.";
         setError(errorMessage);
@@ -61,9 +76,10 @@ const Login = () => {
     } catch (err) {
       setError("An error occurred. Please try again.");
       console.error("Login error:", err.message);
+    } finally {
+      setLoading(false);
     }
-  }
-  
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -131,17 +147,24 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Remember Me and Forgot Password */}
             <div className="flex justify-between items-center mt-4">
+              <label className="inline-flex items-center text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  className="form-checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
+                />
+                <span className="ml-2">Remember Me</span>
+              </label>
               <Link
-                to="/authendication/forgot-password"
+                to="/authentication/forgot-password"
                 className="text-sm text-blue-600 hover:underline"
               >
                 Forgot Password?
               </Link>
             </div>
 
-            {/* Login Button */}
             <button
               type="submit"
               disabled={loading}
@@ -159,7 +182,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Side */}
       <div className="w-full mr-10 md:w-1/2 h-screen">
         <img
           src={Loginimg}

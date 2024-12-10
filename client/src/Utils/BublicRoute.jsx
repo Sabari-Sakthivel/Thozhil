@@ -6,7 +6,7 @@ const PublicRoute = ({ element }) => {
 
   if (isAuthenticated) {
     // Redirect logged-in users away from the login page to the home page or another route
-    return <Navigate to="/layout" />;
+    return <Navigate to="/candidatelayout" />;
   }
 
   return element;

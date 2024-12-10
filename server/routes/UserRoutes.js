@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
   registerUser,
@@ -10,59 +10,47 @@ const {
   getUserDetails,
   getAllUsers,
   deleteUser,
-  
-  updateProfile
-} = require('../controller/UserController');
-const { protectUser } = require('../middleware/UserMiddileware');
+  updateProfile,
+} = require("../controller/UserController");
+const { authenticateUser, authorizeRoles } = require("../middleware/AuthMiddleware");
 const upload = require("../middleware/UploadsMiddleware");
 
+// Authentication routes
+router.post("/usercreate", registerUser); 
+router.post("/verify-otp", verifyOTP); 
+router.post("/login", signin); 
 
+// Password reset and OTP management
+router.post("/forgot-password", forgotpassword); 
+router.post("/reset-password/:token", resetpassword); 
+router.post("/resend-otp", resendOTP); 
 
-
-// authendication routes ............
-// Route to register a new user
-router.post('/usercreate', registerUser);
-
-// Route to verify OTP for user registration
-router.post('/verify-otp', verifyOTP);
-
-// Route to sign in a user
-router.post('/login', signin);
-
-router.get('/getuserdetails',protectUser,getUserDetails)
-
-
-// update the profile 
-router.put("/updateProfile",protectUser, updateProfile);
-
-// Route to update the profile (with file upload)
-// router.put("/update-profile",protectUser,  upload.single("resume"), updateProfile);
+// Protected user routes (authentication required)
+router.get("/getuserdetails", authenticateUser, getUserDetails); 
 router.put(
   "/update-profile",
-  protectUser,
+  authenticateUser,
   upload.fields([
-    { name: "resume", maxCount: 1 }, // Handle resume file upload
-    { name: "profilePicture", maxCount: 1 }, // Handle profile picture file upload
+    { name: "resume", maxCount: 1 }, 
+    { name: "profilePicture", maxCount: 1 }, 
   ]),
   updateProfile
-); 
-// Route to handle forgot password requests
-router.post('/forgot-password', forgotpassword);
+);
 
-// Route to reset the password
-router.post('/reset-password/:token', resetpassword);
+// Admin-only routes
+router.get(
+  "/getAllUser",
+  authenticateUser,
+  authorizeRoles("admin"), 
+  getAllUsers
+);
+router.delete(
+  "/delete/:id",
+  authenticateUser,
+  authorizeRoles("admin"), 
+  deleteUser
+);
 
-// Route to resend OTP to the user’s email
-router.post('/resend-otp', resendOTP);
-router.get('/getAllUser', getAllUsers);
-router.delete('/delete/:id', deleteUser);
 
-
-
-// profile updation routes
-
-
-
- // Protect this route with middleware
 
 module.exports = router;
