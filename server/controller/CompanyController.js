@@ -31,7 +31,7 @@ exports.addOrUpdateCompanyInfo = async (req, res) => {
   }
 };
 
-// Controller to add or update founding info
+
 exports.addOrUpdateFoundingInfo = async (req, res) => {
   const { companyId, foundingInfo } = req.body;
 
@@ -61,7 +61,7 @@ exports.addOrUpdateFoundingInfo = async (req, res) => {
   }
 };
 
-// Controller to add or update social media profiles
+
 exports.addSocialMediaProfile = async (req, res) => {
   const { companyId, socialMediaProfiles } = req.body;
 
@@ -84,7 +84,7 @@ exports.addSocialMediaProfile = async (req, res) => {
   }
 };
 
-// Controller to update account settings
+
 exports.updateAccountSettings = async (req, res) => {
   const { companyId, accountSettings } = req.body;
 
@@ -100,7 +100,7 @@ exports.updateAccountSettings = async (req, res) => {
   }
 };
 
-// Controller to retrieve company data
+
 exports.getCompanyData = async (req, res) => {
   const { companyId } = req.params;
 
@@ -116,7 +116,7 @@ exports.getCompanyData = async (req, res) => {
   }
 };
 
-// Controller to delete a social media profile
+
 exports.deleteSocialMediaProfile = async (req, res) => {
   const { companyId, platform } = req.body;
 

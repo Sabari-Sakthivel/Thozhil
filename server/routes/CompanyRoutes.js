@@ -28,6 +28,6 @@ router.post("/account-settings", updateAccountSettings);
 router.get("/:companyId", getCompanyData);
 
 // Delete Social Media Profile
-router.delete("/social-media", deleteSocialMediaProfile);
+router.delete("/delete-social-media", deleteSocialMediaProfile);
 
 module.exports = router;
