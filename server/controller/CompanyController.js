@@ -1,33 +1,29 @@
 const Company = require("../models/CompanyModel");
 
-
-
 exports.addOrUpdateCompanyInfo = async (req, res) => {
   const { companyInfo } = req.body;
 
   try {
-    
     const parsedCompanyInfo = JSON.parse(companyInfo);
 
     const updateData = {
       companyInfo: parsedCompanyInfo,
     };
 
-    
     if (req.files && req.files.logo) {
-      updateData.logo = req.files.logo[0].path;
+      updateData.companyInfo.logo = req.files.logo[0].path.replace(/\\/g, "/");
     }
-
-    
     if (req.files && req.files.banner) {
-      updateData.bannerImage = req.files.banner[0].path;
+      updateData.companyInfo.bannerImage = req.files.banner[0].path.replace(
+        /\\/g,
+        "/"
+      );
     }
 
-    const company = await Company.findOneAndUpdate(
-      {}, 
-      updateData,
-      { new: true, upsert: true } 
-    );
+    const company = await Company.findOneAndUpdate({}, updateData, {
+      new: true,
+      upsert: true,
+    });
 
     res.status(200).json({ success: true, company });
   } catch (error) {
@@ -35,12 +31,16 @@ exports.addOrUpdateCompanyInfo = async (req, res) => {
   }
 };
 
-
-
-
 // Controller to add or update founding info
 exports.addOrUpdateFoundingInfo = async (req, res) => {
   const { companyId, foundingInfo } = req.body;
+
+  if (!companyId || !foundingInfo) {
+    return res.status(400).json({
+      success: false,
+      message: "companyId and foundingInfo are required.",
+    });
+  }
 
   try {
     const company = await Company.findByIdAndUpdate(
@@ -48,6 +48,13 @@ exports.addOrUpdateFoundingInfo = async (req, res) => {
       { foundingInfo },
       { new: true, upsert: true }
     );
+
+    if (!company) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
+    }
+
     res.status(200).json({ success: true, company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -61,9 +68,16 @@ exports.addSocialMediaProfile = async (req, res) => {
   try {
     const company = await Company.findByIdAndUpdate(
       companyId,
-      { socialMediaProfiles },
+      { $push: { socialMediaProfiles: { $each: socialMediaProfiles } } }, 
       { new: true }
     );
+
+    if (!company) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Company not found." });
+    }
+
     res.status(200).json({ success: true, company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

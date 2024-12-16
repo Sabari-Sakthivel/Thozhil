@@ -8,6 +8,7 @@ const CompanySchema = new mongoose.Schema({
     aboutUs: String,
   },
   foundingInfo: {
+    foundersName:String,
     organizationType: String,
     industryType: String,
     teamSize: String,
@@ -25,6 +26,7 @@ const CompanySchema = new mongoose.Schema({
     location: String,
     email: String,
     phone: String,
+    address:String,
   },
 });
 

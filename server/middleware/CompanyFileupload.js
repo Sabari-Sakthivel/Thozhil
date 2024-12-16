@@ -20,4 +20,5 @@ const uploadFiles = upload.fields([
   { name: 'banner', maxCount: 1 }, 
 ]);
 
+
 module.exports = uploadFiles;
