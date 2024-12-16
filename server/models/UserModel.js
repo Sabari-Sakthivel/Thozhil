@@ -51,7 +51,11 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: String, 
     },
-    resume: { type: String }, 
+    resume: { type: String },
+    profilePicture: {
+      type: String, 
+      default: null,
+    },
     jobRole: {
       type: String,
       trim: true,

@@ -10,6 +10,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -22,6 +24,35 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return "Email is required.";
+    if (!emailRegex.test(email)) return "Please enter a valid email address.";
+    return "";
+  };
+
+  // Validate Password for Strength
+  const validatePassword = (password) => {
+    const lengthCriteria = /.{8,}/; // At least 8 characters
+    const upperCaseCriteria = /[A-Z]/; // At least one uppercase letter
+    const lowerCaseCriteria = /[a-z]/; // At least one lowercase letter
+    const numberCriteria = /[0-9]/; // At least one number
+    const specialCharacterCriteria = /[!@#$%^&*(),.?":{}|<>]/; // At least one special character
+
+    if (!password) return "Password is required.";
+    if (!lengthCriteria.test(password))
+      return "Password must be at least 8 characters.";
+    if (!upperCaseCriteria.test(password))
+      return "Password must include at least one uppercase letter.";
+    if (!lowerCaseCriteria.test(password))
+      return "Password must include at least one lowercase letter.";
+    if (!numberCriteria.test(password))
+      return "Password must include at least one number.";
+    if (!specialCharacterCriteria.test(password))
+      return "Password must include at least one special character.";
+
+    return ""; // No errors
+  };
   // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -31,6 +62,12 @@ const Login = () => {
     // Validate Inputs
     if (!email || !password) {
       setError("Please fill in all fields.");
+      setLoading(false);
+      return;
+    }
+    const passwordValidationError = validatePassword(password);
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
       setLoading(false);
       return;
     }
@@ -112,11 +149,22 @@ const Login = () => {
                 <input
                   type="email"
                   id="email"
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError(validateEmail(e.target.value));
+                  }}
                   value={email}
+                  
                   placeholder="Enter your email"
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`mt-1 block w-full px-4 py-2 border ${
+                    emailError ? "border-red-500" : "border-gray-300"
+                  } rounded-lg focus:outline-none focus:ring-2 ${
+                    emailError ? "focus:ring-red-500" : "focus:ring-blue-500"
+                  }`}
                 />
+                {emailError && (
+                  <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                )}
               </div>
               <div className="relative">
                 <label
@@ -129,9 +177,17 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError(validatePassword(e.target.value));
+                  }}
                   placeholder="Enter your password"
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                  className={`mt-1 block w-full px-4 py-2 border ${
+                    passwordError ? "border-red-500" : "border-gray-300"
+                  } rounded-lg focus:outline-none focus:ring-2 ${
+                    passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+                  } pr-10`}
                 />
                 <button
                   type="button"
@@ -144,6 +200,9 @@ const Login = () => {
                     <AiOutlineEye className="h-5 w-5" />
                   )}
                 </button>
+                {passwordError && (
+                  <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                )}
               </div>
             </div>
 

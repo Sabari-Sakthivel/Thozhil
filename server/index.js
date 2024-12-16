@@ -4,6 +4,7 @@ const connectDB = require("./config/Database");
 const path = require("path");
 const cors = require("cors");
 const userRoutes = require("./routes/UserRoutes");
+const CompanyRoutes=require('./routes/CompanyRoutes')
 const { notFound, errorHandler } = require("./middleware/ErrorMiddleware");
 
 dotenv.config();
@@ -23,9 +24,13 @@ connectDB();
 app.use(express.json());
 
 // Serve uploaded files statically
-// Routes
+//  User Routes
 app.use("/user", userRoutes);
-// app.use("/userp", profileRoutes); 
+
+// Company Routes....
+
+ app.use ("/company",CompanyRoutes)
+
 
 // Error handling middlewares
 app.use(notFound);

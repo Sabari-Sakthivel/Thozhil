@@ -34,60 +34,68 @@ const SettingsPage = () => {
     resume: null,
     skills: "",
     areaOfInterest: "",
+    profilePicture: null,
   });
 
   const [editMode, setEditMode] = useState(false);
-
   useEffect(() => {
-    const getUserDetails = async () => {
+    const fetchUserDetails = async () => {
       try {
         const response = await axios.get(
           "http://localhost:4000/user/getuserdetails",
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you're using a token for auth
+              Authorization: `Bearer ${localStorage.getItem("token")}`, // Include token for authentication
             },
           }
         );
 
-        // If response is successful, update the form data
-        const data = response.data;
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          username: data.username || "",
-          phone: data.phone || "",
-          email: data.email || "",
-          dob: data.dob ? format(new Date(data.dob), "dd/MM/yyyy") : "",
-          age: data.age || "",
-          gender: data.gender || "",
-          maritalStatus: data.maritalStatus || "",
-          address: data.address || "",
-          qualificationInput: data.qualificationInput || "",
-          jobRole: data.jobRole || "",
-          experience: data.experience || "",
-          nationality: data.nationality || "",
-          graduationYear: data.graduationYear || "",
-          resume: data.resume || "", // Ensure resume is a string, not a File object
-          skills: data.skills || "",
-          areaOfInterest: data.areaOfInterest || "",
-        }));
-        setLoading(false);
+        if (response.status === 200) {
+          const data = response.data;
+
+          // Update form data with user profile and resume
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            username: data.username || "",
+            phone: data.phone || "",
+            email: data.email || "",
+            dob: data.dob ? format(new Date(data.dob), "dd/MM/yyyy") : "",
+            age: data.age || "",
+            gender: data.gender || "",
+            maritalStatus: data.maritalStatus || "",
+            address: data.address || "",
+            qualificationInput: data.qualificationInput || "",
+            jobRole: data.jobRole || "",
+            experience: data.experience || "",
+            nationality: data.nationality || "",
+            graduationYear: data.graduationYear || "",
+            resume: data.resume || null, // Ensure resume is handled properly
+            profilePicture: data.profilePicture || null, // Handle profile picture
+            skills: data.skills || "",
+            areaOfInterest: data.areaOfInterest || "",
+          }));
+          setLoading(false);
+        } else {
+          setError("Failed to fetch user details.");
+        }
       } catch (error) {
-        setError("Error fetching user details");
-        setLoading(false);
+        const errorMessage =
+          error.response?.data?.message || "Error fetching user details.";
+        setError(errorMessage);
         console.error(error);
+      } finally {
+        setLoading(false); // Always set loading to false
       }
     };
 
-    // Call the function when the component mounts
-    getUserDetails();
+    fetchUserDetails();
   }, []);
 
   // Handle form field changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      
+
       [e.target.name]: e.target.value,
     });
   };
@@ -125,11 +133,9 @@ const SettingsPage = () => {
 
       // Append form fields (excluding resume if not in edit mode)
       for (const [key, value] of Object.entries(formData)) {
-        // If the key is "resume", append it conditionally
-        if (key === "resume" && value) {
-          // If there's a file, append it
-          formDataToSubmit.append(key, value);
-        } else if (key !== "resume") {
+        if ((key === "resume" || key === "profilePicture") && value) {
+          formDataToSubmit.append(key, value); // Append files
+        } else if (key !== "resume" && key !== "profilePicture") {
           formDataToSubmit.append(key, value);
         }
       }
@@ -181,13 +187,12 @@ const SettingsPage = () => {
   }
 
   const getResumeName = (filePath) => {
-    if (filePath) {
+    if (typeof filePath === "string" && filePath) {
       const parts = filePath.split("-");
       return parts.length > 1 ? parts.slice(1).join("-") : filePath; // Join back parts after the first one, if present
     }
-    return "";
+    return ""; // Return an empty string if filePath is not a valid string
   };
-
 
   return (
     <div className="p-6 bg-gray-100 h-screen">
@@ -584,7 +589,7 @@ const SettingsPage = () => {
                       id="resume"
                       name="resume"
                       accept="application/pdf"
-                      value={getResumeName(formData.resume)} 
+                      value={getResumeName(formData.resume)}
                       disabled={!editMode} // Disable when not in edit mode
                       onChange={(e) =>
                         setFormData({
@@ -594,7 +599,6 @@ const SettingsPage = () => {
                       }
                       className="w-full border border-gray-300 rounded-md p-2 mt-1"
                     />
-
                   </div>
 
                   {/* Experience */}
@@ -989,7 +993,7 @@ const SettingsPage = () => {
                         id="resume"
                         name="resume"
                         accept="application/pdf"
-                        // value={getResumeName(formData.resume)} 
+                        // value={getResumeName(formData.resume)}
                         onChange={(e) =>
                           setFormData({
                             ...formData,

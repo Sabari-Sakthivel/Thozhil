@@ -11,7 +11,7 @@ const Register = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-    role: "candidate", 
+    role: "candidate",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -25,67 +25,95 @@ const Register = () => {
       ...formData,
       [name]: value,
     });
+
+    validateField(name, value);
   };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () =>
     setShowConfirmPassword(!showConfirmPassword);
+  const validateField = (name, value) => {
+    let errorMessage = "";
 
-  const validate = () => {
-    let errors = {};
-
-    if (!formData.username) {
-      errors.username = "Username is required.";
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.username)) {
-      errors.username = "Username should contain only letters and spaces.";
+    // Check if the field is empty first
+    if (!value.trim()) {
+      errorMessage = `${
+        name.charAt(0).toUpperCase() + name.slice(1)
+      } is required.`;
+    } else {
+      // Perform specific validation checks based on field name
+      switch (name) {
+        case "username":
+          if (!/^[a-zA-Z\s]+$/.test(value)) {
+            errorMessage = "Username should only contain letters and spaces.";
+          }
+          break;
+        case "email":
+          if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value)) {
+            errorMessage = "Invalid email format.";
+          }
+          break;
+        case "phone":
+          if (!/^[6-9]\d{9}$/.test(value)) {
+            errorMessage =
+              "Phone number must be a valid 10-digit Indian number.";
+          }
+          break;
+        case "password":
+          if (!/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}/.test(value)) {
+            errorMessage =
+              "Password must be at least 8 characters long, with 1 uppercase letter, 1 number, and 1 special character.";
+          }
+          break;
+        case "confirmPassword":
+          if (value !== formData.password) {
+            errorMessage = "Passwords do not match.";
+          }
+          break;
+        case "role":
+          if (!value) {
+            errorMessage = "Role is required.";
+          }
+          break;
+        default:
+          break;
+      }
     }
 
-    if (!formData.email) {
-      errors.email = "Email is required.";
-    } else if (
-      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)
-    ) {
-      errors.email = "Please enter a valid email address.";
-    }
-
-    if (!formData.phone) {
-      errors.phone = "Phone number is required.";
-    } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-      errors.phone = "Please enter a valid 10-digit Indian phone number.";
-    }
-
-    if (!formData.password) {
-      errors.password = "Password is required.";
-    } else if (
-      !/(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}/.test(formData.password)
-    ) {
-      errors.password =
-        "Password must be at least 8 characters long, with 1 uppercase letter, 1 number, and 1 special character.";
-    }
-
-    if (!formData.confirmPassword) {
-      errors.confirmPassword = "Confirm password is required.";
-    } else if (formData.confirmPassword !== formData.password) {
-      errors.confirmPassword = "Passwords do not match.";
-    }
-
-    if (!formData.role) {
-      errors.role = "Role is required.";
-    } else if (!["candidate", "employer"].includes(formData.role)) {
-      errors.role = "Invalid role selected.";
-    }
-
-    setErrors(errors);
-    return Object.keys(errors).length === 0;
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) {
-      return;
+    // Trigger validation for all fields when the user submits the form
+    const fieldNames = Object.keys(formData);
+    let newErrors = {};
+
+    // Validate each field and check if there are errors
+    fieldNames.forEach((field) => {
+      validateField(field, formData[field]);
+      if (errors[field]) {
+        newErrors[field] = errors[field];
+      }
+    });
+
+    // Update the errors state to show all error messages
+    setErrors(newErrors);
+
+    // Check if there are any errors or empty fields
+    const formIsValid =
+      Object.keys(newErrors).length === 0 &&
+      Object.values(formData).every((value) => value !== "");
+
+    if (!formIsValid) {
+      return; // Prevent form submission if there are errors
     }
 
+    // If validation passes, proceed with the registration process
     try {
       const response = await fetch("http://localhost:4000/user/usercreate", {
         method: "POST",
@@ -144,10 +172,12 @@ const Register = () => {
                   onChange={handleChange}
                   maxLength={20}
                   placeholder="Username"
-                  className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-2 border ${
+                    errors.username ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
                 />
                 {errors.username && (
-                  <p className="text-red-500 text-sm">{errors.username}</p>
+                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
                 )}
               </div>
 
@@ -164,10 +194,12 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email address"
-                  className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-2 border ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm">{errors.email}</p>
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
               </div>
 
@@ -185,7 +217,9 @@ const Register = () => {
                   onChange={handleChange}
                   maxLength="10"
                   placeholder="Phone Number"
-                  className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-2 border ${
+                    errors.phone ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-sm">{errors.phone}</p>
@@ -203,7 +237,9 @@ const Register = () => {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-2 border ${
+                    errors.role ? "border-red-500" : "border-gray-300"
+                  } rounded-lg`}
                 >
                   <option value="candidate">Candidate</option>
                   <option value="employer">Employer</option>
@@ -227,7 +263,9 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Password"
-                    className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                    className={`w-full p-2 border ${
+                      errors.password ? "border-red-500" : "border-gray-300"
+                    } rounded-lg`}
                   />
                   <button
                     type="button"
@@ -260,7 +298,11 @@ const Register = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirm Password"
-                    className="w-96 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+                    className={`w-full p-2 border ${
+                      errors.confirmPassword
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-lg`}
                   />
                   <button
                     type="button"
@@ -283,7 +325,7 @@ const Register = () => {
             </div>
             <div className="mt-4">
               <label className="inline-flex items-center text-sm text-gray-600">
-                <input type="checkbox" className="form-checkbox" required />
+                <input type="checkbox" className="form-checkbox" />
                 <span className="ml-2">
                   I agree to the terms and conditions
                 </span>
@@ -303,7 +345,7 @@ const Register = () => {
         <img
           src={Registerimg}
           alt="Login Illustration"
-          className="w-full h-screen object-cover"
+          className="w-full  object-cover"
         />
       </div>
     </div>

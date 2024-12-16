@@ -264,6 +264,8 @@ const updateProfile = asyncHandler(async (req, res) => {
   const userId = req.user.id; // Extract user ID from token
   const updates = req.body;
 
+  console.log("Files received:", req.files);
+
   try {
     // Fetch the current user's profile
     const user = await User.findById(userId);
@@ -275,18 +277,39 @@ const updateProfile = asyncHandler(async (req, res) => {
       });
     }
 
-    // Handle resume file upload
-    if (req.file) {
-      if (user.resume) {
-        const oldResumePath = path.join(__dirname, "..", user.resume);
+    // Handle file uploads
+    if (req.files) {
+      // Handle resume upload
+      if (req.files.resume) {
+        if (user.resume) {
+          const oldResumePath = path.join(__dirname, "..", user.resume);
 
-        // Check if the old resume file exists
-        if (fs.existsSync(oldResumePath)) {
-          fs.unlinkSync(oldResumePath);
+          // Remove old resume file
+          if (fs.existsSync(oldResumePath)) {
+            fs.unlinkSync(oldResumePath);
+          }
         }
+
+        updates.resume = req.files.resume[0].path;
       }
 
-      updates.resume = req.file.path;
+      // Handle profile picture upload
+      if (req.files.profilePicture) {
+        if (user.profilePicture) {
+          const oldProfilePicturePath = path.join(
+            __dirname,
+            "..",
+            user.profilePicture
+          );
+
+          // Remove old profile picture file
+          if (fs.existsSync(oldProfilePicturePath)) {
+            fs.unlinkSync(oldProfilePicturePath);
+          }
+        }
+
+        updates.profilePicture = req.files.profilePicture[0].path;
+      }
     }
 
     // Check if the profile is already complete
