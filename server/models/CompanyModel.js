@@ -1,6 +1,13 @@
 const mongoose = require("mongoose");
 
 const CompanySchema = new mongoose.Schema({
+
+  CompanyRegister :{
+    CompanyName:String,
+    email:String,
+    phone:String,
+    password:String,
+  },
   companyInfo: {
     logo: String,
     bannerImage: String,

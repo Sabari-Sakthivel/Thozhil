@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/UserModel");
+const Company=require("../models/CompanyModel")
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const verifyEmailTemplate = require("../Email Template/VerifyEmailTemplate");
@@ -12,98 +13,98 @@ const generateOTP = () => crypto.randomInt(1000, 9999).toString();
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, phone, password, role = "candidate" } = req.body;
-
-    // Validate input fields
-    if (!username || !email || !phone || !password) {
-      return res
-        .status(400)
-        .json({
-          error: "All fields (username, email, phone, password) are required.",
-        });
-    }
+    const { email, phone, password, role = "candidate", username, companyName } = req.body;
 
     // Validate role
-    const validRoles = ["candidate", "employer", "admin"];
+    const validRoles = ["candidate", "employer"];
     if (!validRoles.includes(role)) {
-      return res
-        .status(400)
-        .json({
-          error: `Invalid role specified. Valid roles: ${validRoles.join(
-            ", "
-          )}.`,
-        });
+      return res.status(400).json({
+        error: `Invalid role specified. Valid roles: ${validRoles.join(", ")}.`,
+      });
     }
 
-    // Restrict admin registration through public API
-    if (role === "admin") {
-      return res
-        .status(403)
-        .json({ error: "Admins cannot register via public registration." });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      if (!existingUser.isVerified) {
-        // If the user is not verified, resend OTP
-        const otp = generateOTP();
-        existingUser.otp = otp;
-        existingUser.otpCreatedAt = new Date();
-        await existingUser.save();
-
-        await sendEmail(
-          existingUser.email,
-          "Email verification",
-          verifyEmailTemplate(otp, existingUser.username)
-        );
-
-        return res.status(200).json({
-          message: `User already exists but is not verified. OTP has been resent to ${existingUser.email}.`,
+    // Check required fields based on role
+    if (role === "candidate") {
+      if (!username || !email || !phone || !password) {
+        return res.status(400).json({
+          error: "All fields (username, email, phone, password) are required for candidate registration.",
         });
-      } else {
-        return res.status(400).json({ error: "Email already registered." });
+      }
+    } else if (role === "employer") {
+      if (!companyName || !email || !phone || !password) {
+        return res.status(400).json({
+          error: "All fields (companyName, email, phone, password) are required for employer registration.",
+        });
       }
     }
 
-    // Generate OTP
-    const otp = generateOTP();
-    const otpCreatedAt = new Date();
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
+    const existingCompany = await Company.findOne({ "CompanyRegister.email": email });
 
-    // Create new user
-    const newUser = new User({
-      username,
-      email,
-      phone,
-      password,
-      role,
-      otp,
-      otpCreatedAt,
-      isVerified: false,
-    });
+    if (existingUser || existingCompany) {
+      return res.status(400).json({ error: "Email already registered." });
+    }
+ // Generate OTP for new user or employer
+ const otp = generateOTP();
+ const otpCreatedAt = new Date();
 
-    await newUser.save();
 
-    // Send verification email
-    await sendEmail(
-      newUser.email,
-      "Email verification",
-      verifyEmailTemplate(otp, username)
-    );
+    // Role-based logic
+    if (role === "candidate") {
+      // Save candidate to `User` collection
+      const newUser = new User({
+        username,
+        email,
+        phone,
+        password,
+        role,
+        otp,
+        otpCreatedAt,
+        isVerified: false,
+      });
 
-    // Send response
-    res.status(201).json({
-      message: `User registered successfully as ${role}. OTP has been sent to ${email}.`,
-    });
+      await newUser.save();
+      // Send OTP email to the candidate
+      await sendEmail(email, "Email verification", verifyEmailTemplate(otp, username));
+
+      return res.status(201).json({
+        message: "Candidate registered successfully. Please verify your email using the OTP.",
+      });
+    } else if (role === "employer") {
+      // Save employer to `Company` collection
+      const newCompany = new Company({
+        CompanyRegister: {
+          companyName,
+          email,
+          phone,
+          password,
+          role,
+        },
+        otp,
+        otpCreatedAt,
+        isVerified: false,  
+      });
+
+      await newCompany.save();
+      await sendEmail(email, "Email verification", verifyEmailTemplate(otp, companyName));
+
+      return res.status(201).json({
+        message: "Employer registered successfully. Please verify your email using the OTP.",
+      });
+    }
   } catch (error) {
-    console.error("Error during user registration:", error);
-
-    res.status(500).json({
+    console.error("Error during registration:", error);
+    return res.status(500).json({
       error: "Server error. Please try again later.",
-      details: error.message, // Optional: Include error details for debugging
+      details: error.message,
     });
   }
 };
+
+
+
+
 
 const verifyOTP = asyncHandler(async (req, res) => {
   const { email, otp } = req.body;

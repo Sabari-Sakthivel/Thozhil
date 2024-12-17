@@ -12,8 +12,7 @@ const CompanyFileupload =require("../middleware/CompanyFileupload")
 const CompanyController=require("../controller/CompanyController")
 
 // Add or Update Company Info
-router.post("/company-info", CompanyFileupload, CompanyController.addOrUpdateCompanyInfo,
-);
+router.post("/company-info", CompanyFileupload, CompanyController.addOrUpdateCompanyInfo);
 
 // Add or Update Founding Info
 router.post("/founding-info", addOrUpdateFoundingInfo);

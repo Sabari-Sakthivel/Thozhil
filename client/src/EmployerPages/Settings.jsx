@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import { useParams } from "react-router-dom";
+
 import {
   FaFacebook,
   FaTwitter,
@@ -7,6 +9,7 @@ import {
   FaLinkedin,
   FaYoutube,
 } from "react-icons/fa";
+import axios from "axios";
 
 const CompanyInfo = () => {
   const [activeTab, setActiveTab] = useState("Company Info");
@@ -44,18 +47,21 @@ const CompanyInfo = () => {
   ]);
   const [logo, setLogo] = useState(null);
   const [banner, setBanner] = useState(null);
-  const [companyInfo, setCompanyInfo] = useState({
-    name: "",
-    aboutUs: "",
-  });
+  const [companyName, setCompanyName] = useState("");
+  const [aboutUs, setAboutUs] = useState("");
+  const { companyId } = useParams();
+  console.log(companyId);
+  
+  
+
   // const [foundingInfo, setFoundingInfo] = useState({
   //   founderName: "",
-  //   foundingDate: "",
-  // });
-  // const [contactInfo, setContactInfo] = useState({
-  //   phone: "",
-  //   email: "",
+  //   organizationType: "",
+  //   industryType: "",
+  //   teamSize: "",
+  //   yearOfEstablishment: "",
   //   website: "",
+  //   companyVision: "",
   // });
 
   const handleAddSocialLink = () => {
@@ -94,28 +100,138 @@ const CompanyInfo = () => {
         return null;
     }
   };
+// File validation function for logo
+const onDropLogo = (acceptedFiles) => {
+  const file = acceptedFiles[0];
+  setLogo(file); 
+};
 
-  const onDropLogo = (acceptedFiles) => {
-    if (acceptedFiles[0]) {
-      setLogo(acceptedFiles[0]);
+// File validation function for banner
+const onDropBanner = (acceptedFiles) => {
+  const file = acceptedFiles[0];
+  setBanner(file); 
+};
+
+// Use Dropzone hook for logo
+const { getRootProps: getLogoRootProps, getInputProps: getLogoInputProps } = useDropzone({
+  onDrop: onDropLogo,
+  accept: {"image/jpeg, image/png, image/jpg": [] }, 
+  multiple: false, 
+});
+
+// Use Dropzone hook for banner
+const { getRootProps: getBannerRootProps, getInputProps: getBannerInputProps } = useDropzone({
+  onDrop: onDropBanner,
+  accept: {"image/jpeg, image/png, image/jpg": [] },
+  multiple: false, 
+});
+useEffect(() => {
+  if (activeTab === "Company Info" && companyId) {
+    console.log(companyId);
+    // Fetch company data when the active tab is "Company Info" and companyId exists
+    const fetchCompanyData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:4000/company/${companyId}`);
+        console.log(response)
+        
+        if (response.data.success) {
+          const data = response.data.company;
+
+          if (data) {
+            setCompanyName(data.companyInfo.companyName || "");
+            setAboutUs(data.companyInfo.aboutUs || "");
+            setLogo(data.companyInfo.logo || null);
+            setBanner(data.companyInfo.bannerImage || null);
+          }
+        } else {
+          console.error("No company data found:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching company data:", error.response ? error.response.data.message : error.message);
+      }
+    };
+
+    fetchCompanyData(); // Call the function to fetch data
+  }
+}, [activeTab, companyId]);
+
+
+  // useEffect(() => {
+  //   const fetchCompanyData = async () => {
+  //     try {
+  //       console.log("Fetching data for companyId:", companyId);
+  //       const response = await axios.get(
+  //         `http://localhost:4000/company/${companyId}`, { timeout: 5000 }
+  //       );
+  //       console.log("API Response:", response);
+
+  //       if (response.data.success) {
+  //         setCompany(response.data.company);
+  //       } else {
+  //         setError(response.data.message);
+  //       }
+  //     } catch (err) {
+  //       console.error("Error fetching company data:", err);
+  //       setError("An error occurred while fetching company data.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   if (companyId) {
+  //     fetchCompanyData();
+  //   }
+  // }, [companyId]);
+
+  // if (loading) return <div>Loading...</div>;
+
+  // if (error) return <div>Error: {error}</div>;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Initialize FormData
+    const formData = new FormData();
+
+    // Append files
+    if (logo) formData.append("logo", logo);
+    if (banner) formData.append("banner", banner);
+
+    const companyInfo = {
+      companyName: companyName,
+      aboutUs: aboutUs,
+    };
+    // Append companyInfo as a stringified object
+    formData.append("companyInfo", JSON.stringify(companyInfo));
+
+    try {
+      // Log FormData for debugging
+      formData.forEach((value, key) => {
+        console.log(key, value);
+      });
+
+      // Send request
+      const response = await axios.post(
+        "http://localhost:4000/company/company-info",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      if (response.data.success) {
+        setActiveTab("Founding Info");
+        alert("Company Info Submitted Successfully!");
+      } else {
+        alert("Failed to submit company info.");
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
     }
   };
-
-  const onDropBanner = (acceptedFiles) => {
-    if (acceptedFiles[0]) {
-      setBanner(acceptedFiles[0]);
-    }
-  };
-
-  const { getRootProps: getLogoRootProps, getInputProps: getLogoInputProps } = useDropzone({
-    onDrop: onDropLogo,
-    accept: "image/*",
-  });
-
-  const { getRootProps: getBannerRootProps, getInputProps: getBannerInputProps } = useDropzone({
-    onDrop: onDropBanner,
-    accept: "image/*",
-  });
 
   return (
     <div className="p-2 max-w-4xl mx-auto">
@@ -144,7 +260,7 @@ const CompanyInfo = () => {
       {/* Render the active tab content */}
       <div>
         {activeTab === "Company Info" && (
-          <div>
+          <form onSubmit={handleSubmit}>
             {/* Logo & Banner Drag-and-Drop */}
             <div className="grid grid-cols-3 mb-6">
               {/* Logo Section */}
@@ -158,7 +274,7 @@ const CompanyInfo = () => {
                 >
                   {logo ? (
                     <img
-                      src={URL.createObjectURL(logo)} 
+                      src={URL.createObjectURL(logo)}
                       alt="Logo"
                       className="w-full h-full object-cover"
                     />
@@ -200,10 +316,10 @@ const CompanyInfo = () => {
                 </label>
                 <input
                   type="text"
-                  value={companyInfo.name}
-                  onChange={(e) =>
-                    setCompanyInfo({ ...companyInfo, name: e.target.value })
-                  }
+                  value={companyName}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                  }}
                   placeholder="Enter company name"
                   className="block w-full border border-gray-300 rounded-md shadow-sm p-2"
                 />
@@ -215,16 +331,16 @@ const CompanyInfo = () => {
                 </label>
                 <textarea
                   rows="5"
-                  value={companyInfo.aboutUs}
-                  onChange={(e) =>
-                    setCompanyInfo({ ...companyInfo, aboutUs: e.target.value })
-                  }
+                  value={aboutUs}
+                  onChange={(e) => {
+                    setAboutUs(e.target.value);
+                  }}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                   placeholder="Write down about your company here. Let the candidate know who we are..."
                 />
               </div>
             </div>
-          </div>
+          </form>
         )}
 
         {activeTab === "Founding Info" && (
@@ -459,15 +575,19 @@ const CompanyInfo = () => {
             Previous
           </button>
         )}
-        <button
-          className={`${
-            activeTab === "Contact"
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-blue-600 hover:bg-blue-700"
-          } text-white px-6 py-2 rounded-md`}
-        >
-          {activeTab === "Contact" ? "Finish Editing" : "Save & Next"}
-        </button>
+        {activeTab === "Company Info" ? (
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+            onClick={handleSubmit} // Trigger handleSubmit for Company Info
+          >
+            Save & Next
+          </button>
+        ) : (
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+            {activeTab === "Contact" ? "Finish Editing" : "Save & Next"}
+          </button>
+        )}
       </div>
     </div>
   );

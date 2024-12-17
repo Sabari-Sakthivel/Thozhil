@@ -107,14 +107,15 @@ exports.getCompanyData = async (req, res) => {
   try {
     const company = await Company.findById(companyId);
     if (!company)
-      return res
-        .status(404)
-        .json({ success: false, message: "Company not found" });
+      return res.status(404).json({ success: false, message: "Company not found" });
+
+    // Ensure you are returning the correct company structure
     res.status(200).json({ success: true, company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 exports.deleteSocialMediaProfile = async (req, res) => {
