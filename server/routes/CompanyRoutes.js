@@ -5,11 +5,13 @@ const {
   addOrUpdateFoundingInfo,
   addSocialMediaProfile,
   updateAccountSettings,
-  getCompanyData,
+getCompanyDataByEmail,
   deleteSocialMediaProfile,
+  getAllCompanies,
 } = require("../controller/CompanyController");
 const CompanyFileupload =require("../middleware/CompanyFileupload")
-const CompanyController=require("../controller/CompanyController")
+const CompanyController=require("../controller/CompanyController");
+const { authenticateUser } = require("../middleware/AuthMiddleware");
 
 // Add or Update Company Info
 router.post("/company-info", CompanyFileupload, CompanyController.addOrUpdateCompanyInfo);
@@ -24,9 +26,12 @@ router.post("/social-media", addSocialMediaProfile);
 router.post("/account-settings", updateAccountSettings);
 
 // Get Company Data
-router.get("/:companyId", getCompanyData);
+router.get("/getcompanydata",authenticateUser, CompanyController.getCompanyDataByUserId);
 
 // Delete Social Media Profile
 router.delete("/delete-social-media", deleteSocialMediaProfile);
+
+// get all companies ....
+router.get("/getallcompanies",getAllCompanies)
 
 module.exports = router;

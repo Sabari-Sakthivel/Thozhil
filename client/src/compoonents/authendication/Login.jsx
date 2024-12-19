@@ -56,8 +56,8 @@ const Login = () => {
   // Handle Login
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError(""); // Clear any previous error messages
+    setLoading(true); // Set loading state to true
 
     // Validate Inputs
     if (!email || !password) {
@@ -65,6 +65,8 @@ const Login = () => {
       setLoading(false);
       return;
     }
+
+    // Validate password format if needed
     const passwordValidationError = validatePassword(password);
     if (passwordValidationError) {
       setPasswordError(passwordValidationError);
@@ -73,47 +75,69 @@ const Login = () => {
     }
 
     try {
+      // Log the email and password being sent (remove password in production for security reasons)
+      console.log("Logging in with:", { email, password });
+
+      // Sending login request
       const response = await axios.post("http://localhost:4000/user/login", {
         email,
         password,
       });
 
+      // Log the response from the backend
+      console.log("Login response:", response.data);
+
+      // Check for valid response (with token and user data)
       if (response.data && response.data.token && response.data.user) {
         const { token, user } = response.data;
+        if (user.role === "employer") {
+          localStorage.setItem("token", token);        // Store token
+          localStorage.setItem("userId", user._id);    // Store user ID
+          localStorage.setItem("companyName", user.companyName); // Store company name
+        }
 
-        // Store token and user data
+        // Store token and user data based on the rememberMe flag
         const storageMethod = rememberMe ? localStorage : sessionStorage;
         storageMethod.setItem("token", token);
         storageMethod.setItem("user", JSON.stringify(user));
 
-        // Set token in AuthContext
+        // Set token in the AuthContext for global authentication state
         login(token);
 
+        // Show success message
         alert(`Login successful as ${user.role}!`);
 
         // Navigate based on user role
         switch (user.role) {
           case "candidate":
-            navigate("/candidatelayout");
+            navigate("/candidatelayout", { state: { email: user.email } });
             break;
           case "employer":
-            navigate("/EmployerDashboard");
+            navigate("/EmployerDashboard", {
+              state: { email: user.email, companyName: user.companyName },
+            });
             break;
           case "admin":
             navigate("/admin/dashboard");
             break;
           default:
-            navigate("/dashboard"); // Default route
+            navigate("/dashboard"); // Default route if no role matched
         }
       } else {
+        // Handle invalid credentials or error in response
         const errorMessage = response.data?.message || "Invalid credentials.";
         setError(errorMessage);
         alert(errorMessage);
       }
     } catch (err) {
+      // Log detailed error message
+      console.error("Login error:", err.response?.data || err.message);
+
+      // Display a generic error message for the user
       setError("An error occurred. Please try again.");
-      console.error("Login error:", err.message);
+      alert("An error occurred. Please try again.");
     } finally {
+      // Reset loading state after the request completes
       setLoading(false);
     }
   };
@@ -154,7 +178,6 @@ const Login = () => {
                     setEmailError(validateEmail(e.target.value));
                   }}
                   value={email}
-                  
                   placeholder="Enter your email"
                   className={`mt-1 block w-full px-4 py-2 border ${
                     emailError ? "border-red-500" : "border-gray-300"
@@ -177,7 +200,6 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
-                
                   onChange={(e) => {
                     setPassword(e.target.value);
                     setPasswordError(validatePassword(e.target.value));

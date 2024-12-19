@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/UserModel");
-const Company=require("../models/CompanyModel")
+const Company = require("../models/CompanyModel");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const verifyEmailTemplate = require("../Email Template/VerifyEmailTemplate");
@@ -13,7 +13,14 @@ const generateOTP = () => crypto.randomInt(1000, 9999).toString();
 
 const registerUser = async (req, res) => {
   try {
-    const { email, phone, password, role = "candidate", username, companyName } = req.body;
+    const {
+      email,
+      phone,
+      password,
+      role = "candidate",
+      username,
+      companyName,
+    } = req.body;
 
     // Validate role
     const validRoles = ["candidate", "employer"];
@@ -27,28 +34,31 @@ const registerUser = async (req, res) => {
     if (role === "candidate") {
       if (!username || !email || !phone || !password) {
         return res.status(400).json({
-          error: "All fields (username, email, phone, password) are required for candidate registration.",
+          error:
+            "All fields (username, email, phone, password) are required for candidate registration.",
         });
       }
     } else if (role === "employer") {
       if (!companyName || !email || !phone || !password) {
         return res.status(400).json({
-          error: "All fields (companyName, email, phone, password) are required for employer registration.",
+          error:
+            "All fields (companyName, email, phone, password) are required for employer registration.",
         });
       }
     }
 
     // Check if the email already exists
     const existingUser = await User.findOne({ email });
-    const existingCompany = await Company.findOne({ "CompanyRegister.email": email });
+    const existingCompany = await Company.findOne({
+      "CompanyRegister.email": email,
+    });
 
     if (existingUser || existingCompany) {
       return res.status(400).json({ error: "Email already registered." });
     }
- // Generate OTP for new user or employer
- const otp = generateOTP();
- const otpCreatedAt = new Date();
-
+    // Generate OTP for new user or employer
+    const otp = generateOTP();
+    const otpCreatedAt = new Date();
 
     // Role-based logic
     if (role === "candidate") {
@@ -66,10 +76,15 @@ const registerUser = async (req, res) => {
 
       await newUser.save();
       // Send OTP email to the candidate
-      await sendEmail(email, "Email verification", verifyEmailTemplate(otp, username));
+      await sendEmail(
+        email,
+        "Email verification",
+        verifyEmailTemplate(otp, username)
+      );
 
       return res.status(201).json({
-        message: "Candidate registered successfully. Please verify your email using the OTP.",
+        message:
+          "Candidate registered successfully. Please verify your email using the OTP.",
       });
     } else if (role === "employer") {
       // Save employer to `Company` collection
@@ -80,17 +95,23 @@ const registerUser = async (req, res) => {
           phone,
           password,
           role,
+          otp,
+          otpCreatedAt,
+          isVerified: false,
         },
-        otp,
-        otpCreatedAt,
-        isVerified: false,  
       });
 
       await newCompany.save();
-      await sendEmail(email, "Email verification", verifyEmailTemplate(otp, companyName));
+      console.log(newCompany);
+      await sendEmail(
+        email,
+        "Email verification",
+        verifyEmailTemplate(otp, companyName)
+      );
 
       return res.status(201).json({
-        message: "Employer registered successfully. Please verify your email using the OTP.",
+        message:
+          "Employer registered successfully. Please verify your email using the OTP.",
       });
     }
   } catch (error) {
@@ -102,36 +123,58 @@ const registerUser = async (req, res) => {
   }
 };
 
-
-
-
-
 const verifyOTP = asyncHandler(async (req, res) => {
-  const { email, otp } = req.body;
-  console.log(req.body);
+  const { email, otp, username, companyName, role } = req.body;
+
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
+    // Role-based query
+    const user =
+      role === "candidate"
+        ? await User.findOne({ email })
+        : await Company.findOne({ "CompanyRegister.email": email });
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User or Company not found",
       });
     }
 
-    // Check if OTP is set
-    if (!user.otp || !user.otpCreatedAt) {
+    // Role-specific validation
+    if (role === "candidate" && user.username !== username) {
       return res.status(400).json({
         success: false,
-        message: "No OTP found or OTP already verified",
+        message: "Username mismatch for candidate.",
       });
     }
 
-    // Calculate OTP age in seconds
-    const otpAge = (new Date() - user.otpCreatedAt) / 1000; // Age of the OTP in seconds
+    if (
+      role === "employer" &&
+      user.CompanyRegister.companyName !== companyName
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name mismatch for employer.",
+      });
+    }
 
-    // Check if OTP has expired (e.g., expire after 5 minutes)
+    // Retrieve OTP and verify it
+    const otpToCheck =
+      role === "candidate" ? user.otp : user.CompanyRegister.otp;
+    const otpCreatedAt =
+      role === "candidate"
+        ? user.otpCreatedAt
+        : user.CompanyRegister.otpCreatedAt;
+
+    if (!otpToCheck || !otpCreatedAt) {
+      return res.status(400).json({
+        success: false,
+        message: "No OTP found or already verified.",
+      });
+    }
+
+    // Check OTP expiry (5 minutes)
+    const otpAge = (new Date() - otpCreatedAt) / 1000;
     if (otpAge > 300) {
       return res.status(400).json({
         success: false,
@@ -139,29 +182,36 @@ const verifyOTP = asyncHandler(async (req, res) => {
       });
     }
 
-    // Check if OTP matches
-    if (user.otp !== otp) {
+    if (otpToCheck !== otp) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP",
+        message: "Invalid OTP.",
       });
     }
 
-    // Clear OTP and mark the user as verified
-    user.otp = null;
-    user.otpCreatedAt = null;
-    user.isVerified = true;
+    // Mark as verified and clear OTP
+    if (role === "candidate") {
+      user.otp = null;
+      user.otpCreatedAt = null;
+      user.isVerified = true;
+    } else {
+      user.CompanyRegister.otp = null;
+      user.CompanyRegister.otpCreatedAt = null;
+      user.CompanyRegister.isVerified = true;
+    }
 
-    // Save updated user
     await user.save();
 
     return res.json({
       success: true,
-      message: "OTP verified successfully",
+      message: "OTP verified successfully.",
+      role,
+      username: role === "candidate" ? user.username : undefined,
+      companyName:
+        role === "employer" ? user.CompanyRegister.companyName : undefined,
     });
   } catch (error) {
     console.error("Error during OTP verification:", error);
-
     res.status(500).json({
       success: false,
       message: "Server error. Please try again later.",
@@ -173,46 +223,88 @@ const signin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user || !user.isVerified) {
-      return res
-        .status(400)
-        .json({ message: "User not registered or not verified" });
-    }
+    let user, role;
 
-    // Validate password
-    const validPassword = await user.matchPassword(password);
-    if (!validPassword) {
-      return res.status(400).json({ message: "Password is incorrect" });
-    }
+    // Check if the user is an employer (company)
+    user = await Company.findOne({ "CompanyRegister.email": email });
+    if (user) {
+      role = "employer";
+      console.log("Employer found:", user);
 
-    // Generate token with role
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1h",
+      // Check if the employer is verified
+      if (!user.CompanyRegister.isVerified) {
+        return res.status(400).json({ message: "Employer is not verified" });
       }
-    );
 
-    // Send response with role and token
-    res.json({
-      token,
-      user: {
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        id: user._id,
-        role: user.role,
-      },
-      message: `Login Successful as ${user.role}`,
-    });
+      // Check the password for employer
+      const validPassword = await user.matchPassword(password);
+      if (!validPassword) {
+        return res.status(400).json({ message: "Invalid password for employer" });
+      }
+
+      // Generate JWT token for the employer
+      const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET_KEY, {
+        expiresIn: "1h",
+      });
+
+      // Send the response for employer login
+      return res.json({
+        token,
+        user: {
+          id: user._id,
+          companyName: user.CompanyRegister.companyName,  // Correctly accessing company info
+          phone: user.CompanyRegister.phone,
+          email: user.CompanyRegister.email,
+          role,
+        },
+        message: `Login successful as ${role}`,
+      });
+    }
+
+    // Check if the user is a candidate (normal user)
+    user = await User.findOne({ email });
+    if (user) {
+      role = "candidate";
+      console.log("Candidate found:", user);
+
+      // Check if the candidate is verified
+      if (!user.isVerified) {
+        return res.status(400).json({ message: "Candidate is not verified" });
+      }
+
+      // Check the password for candidate
+      const validPassword = await user.matchPassword(password);
+      if (!validPassword) {
+        return res.status(400).json({ message: "Invalid password for candidate" });
+      }
+
+      // Generate JWT token for the candidate
+      const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET_KEY, {
+        expiresIn: "1h",
+      });
+
+      // Send the response for candidate login
+      return res.json({
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role,
+        },
+        message: `Login successful as ${role}`,
+      });
+    }
+
+    // If no user is found (not registered)
+    return res.status(400).json({ message: "User not registered" });
+
   } catch (error) {
-    console.error(error);
+    console.error("Sign-in error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 const getUserDetails = async (req, res) => {
   try {

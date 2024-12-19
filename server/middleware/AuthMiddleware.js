@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
+const { Types } = require('mongoose');
 
 // General authentication middleware
 const authenticateUser = async (req, res, next) => {
@@ -11,7 +12,14 @@ const authenticateUser = async (req, res, next) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY); // Decode and verify the token
+    
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    
+    // Validate that the decoded ID is a valid MongoDB ObjectId
+    if (!Types.ObjectId.isValid(decoded.id)) {
+      return res.status(401).json({ message: "Invalid user ID in token" });
+    }
 
     // Find the user in the database using the ID from the token
     const user = await User.findById(decoded.id);
@@ -19,13 +27,22 @@ const authenticateUser = async (req, res, next) => {
       return res.status(401).json({ message: "User not found. Authentication failed." });
     }
 
-    // Attach user object to the request for use in subsequent handlers
+    // Attach the user object to the request for subsequent route handlers
     req.user = user;
 
-    next(); // Continue to the next middleware or route handler
+    // Proceed to the next middleware or route handler
+    next();
   } catch (error) {
     console.error("Authentication error:", error.message);
-    return res.status(401).json({ message: "Authentication failed", error: error.message });
+    // More detailed error message for token errors
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token", error: error.message });
+    }
+    // Handle token expiry
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired", error: error.message });
+    }
+    return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

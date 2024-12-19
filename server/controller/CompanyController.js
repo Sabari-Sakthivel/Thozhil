@@ -101,20 +101,23 @@ exports.updateAccountSettings = async (req, res) => {
 };
 
 
-exports.getCompanyData = async (req, res) => {
-  const { companyId } = req.params;
+exports.getCompanyDataByUserId = async (req, res) => {
+  const { user } = req; // The authenticated user object is available in req.user
 
   try {
-    const company = await Company.findById(companyId);
-    if (!company)
+    // Find the company based on the userId (from req.user)
+    const company = await Company.findOne({ userId: user._id });
+    console.log(company)
+    if (!company) {
       return res.status(404).json({ success: false, message: "Company not found" });
+    }
 
-    // Ensure you are returning the correct company structure
     res.status(200).json({ success: true, company });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 
@@ -138,3 +141,22 @@ exports.deleteSocialMediaProfile = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.getAllCompanies = async (req, res) => {
+  try {
+    // Fetch all companies from the database
+    const companies = await Company.find(); // No need to pass any parameters
+
+    return res.status(200).json({
+      success: true,
+      data: companies,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};
+

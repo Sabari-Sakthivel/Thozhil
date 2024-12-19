@@ -1,12 +1,16 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs"); 
 
 const CompanySchema = new mongoose.Schema({
-
-  CompanyRegister :{
-    CompanyName:String,
-    email:String,
-    phone:String,
-    password:String,
+  CompanyRegister: {
+    CompanyName: String,
+    email: String,
+    phone: String,
+    password: { type: String, required: true },
+    role: String,
+    otp: {type: String,default: null},
+    otpCreatedAt: {type: Date,default: null},
+    isVerified: {type: Boolean,default: false},
   },
   companyInfo: {
     logo: String,
@@ -15,7 +19,7 @@ const CompanySchema = new mongoose.Schema({
     aboutUs: String,
   },
   foundingInfo: {
-    foundersName:String,
+    foundersName: String,
     organizationType: String,
     industryType: String,
     teamSize: String,
@@ -31,10 +35,24 @@ const CompanySchema = new mongoose.Schema({
   ],
   accountSettings: {
     location: String,
-    email: String,
-    phone: String,
-    address:String,
+    address: String,
   },
 });
+
+// Hash password before saving to the database
+CompanySchema.pre("save", async function (next) {
+  if (!this.isModified("CompanyRegister.password")) {
+    return next();
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  this.CompanyRegister.password = await bcrypt.hash(this.CompanyRegister.password, salt);
+  next();
+});
+
+// Compare entered password with the hashed password in the database
+CompanySchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.CompanyRegister.password);
+};
 
 module.exports = mongoose.model("Company", CompanySchema);

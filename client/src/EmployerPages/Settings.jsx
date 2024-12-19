@@ -49,20 +49,16 @@ const CompanyInfo = () => {
   const [banner, setBanner] = useState(null);
   const [companyName, setCompanyName] = useState("");
   const [aboutUs, setAboutUs] = useState("");
-  const { companyId } = useParams();
-  console.log(companyId);
   
   
-
-  // const [foundingInfo, setFoundingInfo] = useState({
-  //   founderName: "",
-  //   organizationType: "",
-  //   industryType: "",
-  //   teamSize: "",
-  //   yearOfEstablishment: "",
-  //   website: "",
-  //   companyVision: "",
-  // });
+  const [foundersName, setFoundersName] = useState("");
+  const [organizationType, setOrganizationType] = useState("");
+  const [industryType, setIndustryType] = useState("");
+  const [teamSize, setTeamSize] = useState("");
+  const [yearOfEstablishment, setYearOfEstablishment] = useState("");
+  const [website, setWebsite] = useState("");
+  const [companyVision, setCompanyVision] = useState("");
+ 
 
   const handleAddSocialLink = () => {
     setSocialLinks([
@@ -125,68 +121,41 @@ const { getRootProps: getBannerRootProps, getInputProps: getBannerInputProps } =
   accept: {"image/jpeg, image/png, image/jpg": [] },
   multiple: false, 
 });
-useEffect(() => {
-  if (activeTab === "Company Info" && companyId) {
-    console.log(companyId);
-    // Fetch company data when the active tab is "Company Info" and companyId exists
-    const fetchCompanyData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:4000/company/${companyId}`);
-        console.log(response)
-        
-        if (response.data.success) {
-          const data = response.data.company;
+const fetchCompanyData = async () => {
+  try {
+    // Get token from localStorage (or wherever it's stored)
+    const token = localStorage.getItem("token");
 
-          if (data) {
-            setCompanyName(data.companyInfo.companyName || "");
-            setAboutUs(data.companyInfo.aboutUs || "");
-            setLogo(data.companyInfo.logo || null);
-            setBanner(data.companyInfo.bannerImage || null);
-          }
-        } else {
-          console.error("No company data found:", response.data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching company data:", error.response ? error.response.data.message : error.message);
-      }
-    };
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
 
-    fetchCompanyData(); // Call the function to fetch data
+    // Send GET request with token in the Authorization header
+    const response = await axios.get("http://localhost:4000/company/getcompanydata", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.success) {
+      const { companyInfo } = response.data.company;
+
+      // Set company data in your state or form inputs
+      setCompanyName(companyInfo?.companyName || "");
+      setAboutUs(companyInfo?.aboutUs || "");
+      setLogo(companyInfo?.logo || null);
+      setBanner(companyInfo?.bannerImage || null);
+    } else {
+      console.error("Error fetching company data:", response.data.message);
+    }
+  } catch (error) {
+    console.error("Error fetching company data:", error.response ? error.response.data.message : error.message);
   }
-}, [activeTab, companyId]);
+};
 
 
-  // useEffect(() => {
-  //   const fetchCompanyData = async () => {
-  //     try {
-  //       console.log("Fetching data for companyId:", companyId);
-  //       const response = await axios.get(
-  //         `http://localhost:4000/company/${companyId}`, { timeout: 5000 }
-  //       );
-  //       console.log("API Response:", response);
-
-  //       if (response.data.success) {
-  //         setCompany(response.data.company);
-  //       } else {
-  //         setError(response.data.message);
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching company data:", err);
-  //       setError("An error occurred while fetching company data.");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (companyId) {
-  //     fetchCompanyData();
-  //   }
-  // }, [companyId]);
-
-  // if (loading) return <div>Loading...</div>;
-
-  // if (error) return <div>Error: {error}</div>;
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -203,6 +172,18 @@ useEffect(() => {
     };
     // Append companyInfo as a stringified object
     formData.append("companyInfo", JSON.stringify(companyInfo));
+
+     // Append foundingInfo as a stringified object
+     const foundingInfo = {
+      foundersName,
+      organizationType,
+      industryType,
+      teamSize,
+      yearOfEstablishment,
+      website,
+      companyVision,
+    };
+    formData.append("foundingInfo", JSON.stringify(foundingInfo));
 
     try {
       // Log FormData for debugging

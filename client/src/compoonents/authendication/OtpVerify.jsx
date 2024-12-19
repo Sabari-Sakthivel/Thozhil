@@ -9,8 +9,9 @@ function OtpVerification() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const { email, username } = location.state || {};
-  
+  const { email, username, role, companyName } = location.state || {}; // Get role and companyName from state
+
+  console.log("Location State:", location.state);
 
   // Handle OTP input changes
   const handleChange = (element, index) => {
@@ -29,6 +30,7 @@ function OtpVerification() {
   // Submit OTP for verification
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (otp.join("").length !== 4) {
       setError("Please enter a valid 4-digit OTP.");
       return;
@@ -37,23 +39,42 @@ function OtpVerification() {
     try {
       const response = await axios.post(
         "http://localhost:4000/user/verify-otp",
-        { otp: otp.join(""), email: email, username: username }
+        {
+          otp: otp.join(""),
+          email,
+          username,
+          role,
+          companyName,
+        }
       );
 
+      console.log("API Response:", response);
+
       if (response.data.success) {
-        setSuccessMessage("OTP verified successfully. Please log in again.");
+        setSuccessMessage("OTP verified successfully.");
         setError("");
         setTimeout(() => {
-          console.log("Navigating to payment page");
-          navigate("/payment", { state: { email, username } });
+          console.log("Navigating to the appropriate page based on role");
+          
+          if (role === "employer") {
+            navigate("/login", { state: { email, companyName } });
+          } else {
+            navigate("/payment", { state: { email, username } });
+          }
         }, 1000);
       } else {
-        setError("Invalid OTP. Please try again.");
+        setError(response.data.message || "Invalid OTP. Please try again.");
         setSuccessMessage("");
       }
     } catch (err) {
       console.error("Error verifying OTP:", err);
-      setError("An error occurred. Please try again.");
+
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+
       setSuccessMessage("");
     }
   };
@@ -71,7 +92,12 @@ function OtpVerification() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: email, username: username }),
+        body: JSON.stringify({
+          email: email,
+          username: username,
+          role: role,
+          companyName: companyName,
+        }), // Pass role and companyName if employer
       });
       const data = await response.json();
 
