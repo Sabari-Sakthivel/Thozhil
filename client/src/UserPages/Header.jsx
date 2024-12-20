@@ -1,44 +1,65 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaBell , FaSearch} from "react-icons/fa";
-import axios from 'axios'; // Import axios for the API call
+import { FaBell, FaSearch } from "react-icons/fa";
+import axios from 'axios';
 
-const Header = ({ isLandingpage }) => {
+const Header = ({ isLandingpage, isUserPage }) => {
   const location = useLocation();
 
-  // State to store the username and loading/error states
+  // State to store the username, company name, logo, and loading/error states
   const [username, setUsername] = useState(null);
+  const [companyName, setCompanyName] = useState(null); // State to store the company name
+  const [logo, setLogo] = useState(null); // State to store the logo
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const getUserDetails = async () => {
-      try {
-        const response = await axios.get('http://localhost:4000/user/getuserdetails', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`, // Assuming you're using a token for auth
-          },
-        });
-        console.log(response);
+    // Only fetch user details if we're on a user page
+    if (isUserPage && localStorage.getItem('token')) {
+      const getUserDetails = async () => {
+        try {
+          const response = await axios.get('http://localhost:4000/user/getuserdetails', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          console.log(response);
+          const data = response.data;
+          setUsername(data.username);
+          setLoading(false);
+        } catch (error) {
+          setError('Error fetching user details');
+          setLoading(false);
+        }
+      };
 
-        // If the response is successful, update the username
-        const data = response.data;
-        setUsername(data.username); // Update username state with fetched data
-
-        setLoading(false);
-      } catch (error) {
-        setError('Error fetching user details');
-        setLoading(false);
-      }
-    };
-
-    // Only call getUserDetails if the token exists in localStorage
-    if (localStorage.getItem('token')) {
       getUserDetails();
     } else {
-      setLoading(false); // If no token, no need to fetch user details
+      setLoading(false); // No need to fetch user details on employer or landing pages
     }
-  }, []); // Empty dependency array means this runs on mount
+  }, [isUserPage]);
+
+  useEffect(() => {
+    // Fetch company name and logo only when on employer page
+    if (!isUserPage && localStorage.getItem('token')) {
+      const getCompanyDetails = async () => {
+        try {
+          const response = await axios.get('http://localhost:4000/company/getcompanydata', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          const companyDetails = response.data.companyDetails;
+          setCompanyName(companyDetails.CompanyName); // Set the company name
+          setLogo(companyDetails.logo); // Set the logo
+        } catch (error) {
+          setError('Error fetching company details');
+        }
+      };
+
+      getCompanyDetails();
+    }
+  }, [isUserPage]); // Only run when isUserPage changes
 
   // Function to check if the link is active
   const isActive = (path) => location.pathname === path;
@@ -53,15 +74,14 @@ const Header = ({ isLandingpage }) => {
           </Link>
         </div>
 
-
         {/* Center: Search Bar (Only for Landing Page) */}
         {isLandingpage && (
           <div className="flex justify-center items-center flex-grow">
-            <div className="relative ">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Search for jobs, skills, or companies..."
-                className="w-96 pl-10 items-center  px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-96 pl-10 items-center px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <FaSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-500" />
             </div>
@@ -77,42 +97,60 @@ const Header = ({ isLandingpage }) => {
                 <Link to="/login">Sign In</Link>
               </button>
               <button className="px-4 py-2 bg-blue-500 text-white rounded-md font-semibold border border-gray-400 hover:text-blue-500 hover:bg-white">
-                <Link to="/login">Post A Jobs</Link>
+                <Link to="/login">Post A Job</Link>
               </button>
             </>
           ) : (
-            // Show Notification and Profile for other pages
+            // Show Notification and Profile for user pages or employer pages
             <>
-              {/* Notification Icon */}
+              {/* Notification Icon (Visible for employer and user pages) */}
               <div className="relative">
                 <FaBell className="text-gray-600 text-2xl" />
               </div>
 
               {/* Profile Section */}
               <div className="flex items-center space-x-3">
-                {/* Display profile image */}
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
-                  <img
-                    src="https://via.placeholder.com/40"
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                {/* Display company name and logo for employer page */}
+                {!isUserPage && companyName && logo && (
+                  <>
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
+                      <img
+                        src={logo}
+                        alt="Company Logo"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="text-sm font-medium text-gray-700">
+                      {companyName} {/* Display the company name */}
+                    </div>
+                  </>
+                )}
 
-                {/* Show username if user is logged in */}
-                <div className="flex flex-col items-end">
-                  {loading ? (
-                    <p className="text-sm font-medium text-gray-500">Loading...</p>
-                  ) : error ? (
-                    <p className="text-sm font-medium text-red-500">{error}</p>
-                  ) : username ? (
-                    <p className="text-sm font-medium text-gray-700">
-                      {username} {/* Display the username */}
-                    </p>
-                  ) : (
-                    <p className="text-sm font-medium text-gray-500">Guest</p>
-                  )}
-                </div>
+                {/* Display profile image and username for user pages */}
+                {isUserPage && (
+                  <>
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col items-end">
+                      {loading ? (
+                        <p className="text-sm font-medium text-gray-500">Loading...</p>
+                      ) : error ? (
+                        <p className="text-sm font-medium text-red-500">{error}</p>
+                      ) : username ? (
+                        <p className="text-sm font-medium text-gray-700">
+                          {username} {/* Display the username */}
+                        </p>
+                      ) : (
+                        <p className="text-sm font-medium text-gray-500">Guest</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </>
           )}

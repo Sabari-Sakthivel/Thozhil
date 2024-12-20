@@ -1,44 +1,48 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
+const Company= require("../models/CompanyModel")
 const { Types } = require('mongoose');
 
 // General authentication middleware
 const authenticateUser = async (req, res, next) => {
   try {
-    // Extract the token from the Authorization header
     const authHeader = req.header("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Authorization token is required" });
     }
 
     const token = authHeader.replace("Bearer ", "");
-    
+
     // Verify and decode the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    
-    // Validate that the decoded ID is a valid MongoDB ObjectId
+
     if (!Types.ObjectId.isValid(decoded.id)) {
-      return res.status(401).json({ message: "Invalid user ID in token" });
+      return res.status(401).json({ message: "Invalid ID in token" });
     }
 
-    // Find the user in the database using the ID from the token
+    // Try to find the user by ID
     const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({ message: "User not found. Authentication failed." });
+
+    if (user) {
+      req.user = user; // Attach user to request
+      return next();
     }
 
-    // Attach the user object to the request for subsequent route handlers
-    req.user = user;
+    // If user not found, try to find the company by ID
+    const company = await Company.findById(decoded.id);
 
-    // Proceed to the next middleware or route handler
-    next();
+    if (company) {
+      req.company = company; // Attach company to request
+      return next();
+    }
+
+    // If neither user nor company is found
+    return res.status(404).json({ message: "User or company not found. Authentication failed." });
   } catch (error) {
     console.error("Authentication error:", error.message);
-    // More detailed error message for token errors
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "Invalid token", error: error.message });
     }
-    // Handle token expiry
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ message: "Token expired", error: error.message });
     }

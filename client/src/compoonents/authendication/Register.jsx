@@ -12,7 +12,7 @@ const Register = () => {
     password: "",
     confirmPassword: "",
     role: "candidate",
-    companyName: "",
+    CompanyName: "",
     termsAccepted: false,
   });
 
@@ -59,7 +59,7 @@ const Register = () => {
           }
           break;
   
-        case "companyName":
+        case "CompanyName":
           if (formData.role === "candidate") {
             // Skip company name validation if the role is candidate
             return ""; // No error for candidate
@@ -130,9 +130,9 @@ const Register = () => {
         console.log("Skipping validation for username");
         return; // Skip username validation for employer
       }
-      if (field === "companyName" && skipCompanyNameValidation) {
-        console.log("Skipping validation for companyName");
-        return; // Skip companyName validation for candidate
+      if (field === "CompanyName" && skipCompanyNameValidation) {
+        console.log("Skipping validation for CompanyName");
+        return; // Skip CompanyName validation for candidate
       }
   
       // Run field validation and accumulate errors
@@ -157,7 +157,7 @@ const Register = () => {
     // Check if all fields are valid, ignoring skipped fields
     const formIsValid = Object.keys(newErrors).length === 0 && Object.entries(formData).every(([key, value]) => {
       // Ignore skipped fields for validation
-      if ((key === "username" && skipUsernameValidation) || (key === "companyName" && skipCompanyNameValidation)) {
+      if ((key === "username" && skipUsernameValidation) || (key === "CompanyName" && skipCompanyNameValidation)) {
         return true; // Treat skipped fields as valid
       }
       return value !== "" && value !== undefined; // Ensure other fields are non-empty
@@ -241,23 +241,23 @@ const Register = () => {
       {formData.role === "employer" && (
         <div className="flex flex-col">
           <label
-            htmlFor="companyName"
+            htmlFor="CompanyName"
             className="text-base font-semibold text-gray-600 mb-1"
           >
             Company Name:
           </label>
           <input
             type="text"
-            name="companyName"
-            value={formData.companyName}
+            name="CompanyName"
+            value={formData.CompanyName}
             onChange={handleChange}
             placeholder="Company Name"
             className={`w-full p-2 border ${
-              errors.companyName ? "border-red-500" : "border-gray-300"
+              errors.CompanyName ? "border-red-500" : "border-gray-300"
             } rounded-lg`}
           />
-          {errors.companyName && (
-            <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
+          {errors.CompanyName && (
+            <p className="text-red-500 text-sm mt-1">{errors.CompanyName}</p>
           )}
         </div>
       )}

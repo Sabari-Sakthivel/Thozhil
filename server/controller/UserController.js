@@ -2,7 +2,6 @@ const asyncHandler = require("express-async-handler");
 const User = require("../models/UserModel");
 const Company = require("../models/CompanyModel");
 const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
 const verifyEmailTemplate = require("../Email Template/VerifyEmailTemplate");
 const sendEmail = require("../utils/EmailService");
 const jwt = require("jsonwebtoken");
@@ -19,7 +18,7 @@ const registerUser = async (req, res) => {
       password,
       role = "candidate",
       username,
-      companyName,
+      CompanyName,
     } = req.body;
 
     // Validate role
@@ -39,10 +38,10 @@ const registerUser = async (req, res) => {
         });
       }
     } else if (role === "employer") {
-      if (!companyName || !email || !phone || !password) {
+      if (!CompanyName || !email || !phone || !password) {
         return res.status(400).json({
           error:
-            "All fields (companyName, email, phone, password) are required for employer registration.",
+            "All fields (CompanyName, email, phone, password) are required for employer registration.",
         });
       }
     }
@@ -90,7 +89,7 @@ const registerUser = async (req, res) => {
       // Save employer to `Company` collection
       const newCompany = new Company({
         CompanyRegister: {
-          companyName,
+          CompanyName,
           email,
           phone,
           password,
@@ -106,7 +105,7 @@ const registerUser = async (req, res) => {
       await sendEmail(
         email,
         "Email verification",
-        verifyEmailTemplate(otp, companyName)
+        verifyEmailTemplate(otp, CompanyName)
       );
 
       return res.status(201).json({
@@ -124,7 +123,7 @@ const registerUser = async (req, res) => {
 };
 
 const verifyOTP = asyncHandler(async (req, res) => {
-  const { email, otp, username, companyName, role } = req.body;
+  const { email, otp, role } = req.body;
 
   try {
     // Role-based query
@@ -141,22 +140,22 @@ const verifyOTP = asyncHandler(async (req, res) => {
     }
 
     // Role-specific validation
-    if (role === "candidate" && user.username !== username) {
-      return res.status(400).json({
-        success: false,
-        message: "Username mismatch for candidate.",
-      });
-    }
+    // if (role === "candidate" && user.username !== username) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Username mismatch for candidate.",
+    //   });
+    // }
 
-    if (
-      role === "employer" &&
-      user.CompanyRegister.companyName !== companyName
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Company name mismatch for employer.",
-      });
-    }
+    // if (
+    //   role === "employer" &&
+    //   user.CompanyRegister.CompanyName !== CompanyName
+    // ) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Company name mismatch for employer.",
+    //   });
+    // }
 
     // Retrieve OTP and verify it
     const otpToCheck =
@@ -207,8 +206,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
       message: "OTP verified successfully.",
       role,
       username: role === "candidate" ? user.username : undefined,
-      companyName:
-        role === "employer" ? user.CompanyRegister.companyName : undefined,
+      CompanyName:
+        role === "employer" ? user.CompanyRegister.CompanyName : undefined,
     });
   } catch (error) {
     console.error("Error during OTP verification:", error);
@@ -246,17 +245,18 @@ const signin = asyncHandler(async (req, res) => {
       const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET_KEY, {
         expiresIn: "1h",
       });
-
+      console.log(user)
       // Send the response for employer login
       return res.json({
         token,
         user: {
           id: user._id,
-          companyName: user.CompanyRegister.companyName,  // Correctly accessing company info
+          CompanyName: user.CompanyRegister.CompanyName,  
           phone: user.CompanyRegister.phone,
           email: user.CompanyRegister.email,
           role,
         },
+     
         message: `Login successful as ${role}`,
       });
     }
@@ -279,7 +279,7 @@ const signin = asyncHandler(async (req, res) => {
       }
 
       // Generate JWT token for the candidate
-      const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET_KEY, {
+      const token = jwt.sign({ _id: user._id, role }, process.env.JWT_SECRET_KEY, {
         expiresIn: "1h",
       });
 
@@ -287,7 +287,7 @@ const signin = asyncHandler(async (req, res) => {
       return res.json({
         token,
         user: {
-          id: user._id,
+          _id: user._id,
           username: user.username,
           email: user.email,
           role,

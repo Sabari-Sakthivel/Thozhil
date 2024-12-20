@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { useParams } from "react-router-dom";
 
-import {
-  FaFacebook,
-  FaTwitter,
-  FaInstagram,
-  FaLinkedin,
-  FaYoutube,
-} from "react-icons/fa";
+import { FaTwitter, FaLinkedin, FaInstagram, FaYoutube } from "react-icons/fa";
 import axios from "axios";
+import { format } from "date-fns";
 
 const CompanyInfo = () => {
   const [activeTab, setActiveTab] = useState("Company Info");
-  const [socialLinks, setSocialLinks] = useState([
+  const [links, setLinks] = useState([
     {
       id: 1,
-      platform: "Facebook",
+      platform: "LinkedIn",
       url: "",
-      icon: <FaFacebook className="text-blue-500" />,
+      icon: <FaLinkedin className="text-blue-600" />,
     },
     {
       id: 2,
@@ -34,23 +28,22 @@ const CompanyInfo = () => {
     },
     {
       id: 4,
-      platform: "LinkedIn",
+      platform: "YouTube",
       url: "",
-      icon: <FaLinkedin className="text-blue-500" />,
-    },
-    {
-      id: 5,
-      platform: "Youtube",
-      url: "",
-      icon: <FaYoutube className="text-red-500" />,
+      icon: <FaYoutube className="text-red-600" />,
     },
   ]);
+  const [location, setLocation] = useState("");
+  const [address, setAddress] = useState("");
+
   const [logo, setLogo] = useState(null);
   const [banner, setBanner] = useState(null);
-  const [companyName, setCompanyName] = useState("");
+  const [CompanyName, setCompanyName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [aboutUs, setAboutUs] = useState("");
-  
-  
+  const [id, setId] = useState("");
+
   const [foundersName, setFoundersName] = useState("");
   const [organizationType, setOrganizationType] = useState("");
   const [industryType, setIndustryType] = useState("");
@@ -58,104 +51,158 @@ const CompanyInfo = () => {
   const [yearOfEstablishment, setYearOfEstablishment] = useState("");
   const [website, setWebsite] = useState("");
   const [companyVision, setCompanyVision] = useState("");
- 
 
-  const handleAddSocialLink = () => {
-    setSocialLinks([
-      ...socialLinks,
-      { id: socialLinks.length + 1, platform: "", url: "", icon: null },
-    ]);
+  const handleInputChange = (id, value) => {
+    setLinks((prevLinks) =>
+      prevLinks.map((link) => (link.id === id ? { ...link, url: value } : link))
+    );
   };
 
-  const handleSocialLinkChange = (id, platform) => {
-    setSocialLinks(
-      socialLinks.map((link) =>
+  const handlePlatformChange = (id, platform) => {
+    const platformIcons = {
+      LinkedIn: <FaLinkedin className="text-blue-600" />,
+      Twitter: <FaTwitter className="text-blue-400" />,
+      Instagram: <FaInstagram className="text-pink-500" />,
+      YouTube: <FaYoutube className="text-red-600" />,
+    };
+
+    setLinks((prevLinks) =>
+      prevLinks.map((link) =>
         link.id === id
-          ? { ...link, platform, icon: getPlatformIcon(platform) }
+          ? { ...link, platform, icon: platformIcons[platform] }
           : link
       )
     );
   };
-
-  const handleRemoveSocialLink = (id) => {
-    setSocialLinks(socialLinks.filter((link) => link.id !== id));
-  };
-  const getPlatformIcon = (platform) => {
-    switch (platform) {
-      case "Facebook":
-        return <FaFacebook />;
-      case "Twitter":
-        return <FaTwitter />;
-      case "Instagram":
-        return <FaInstagram />;
-      case "LinkedIn":
-        return <FaLinkedin />;
-      case "YouTube":
-        return <FaYoutube />;
-      default:
-        return null;
+  const handlePrevious = () => {
+    const tabs = [
+      "Company Info",
+      "Founding Info",
+      "Social Media Profile",
+      "Account Settings",
+    ];
+    const currentIndex = tabs.indexOf(activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]); // Move to the previous tab
     }
   };
-// File validation function for logo
-const onDropLogo = (acceptedFiles) => {
-  const file = acceptedFiles[0];
-  setLogo(file); 
-};
 
-// File validation function for banner
-const onDropBanner = (acceptedFiles) => {
-  const file = acceptedFiles[0];
-  setBanner(file); 
-};
+  // Fetch company data on component mount
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-// Use Dropzone hook for logo
-const { getRootProps: getLogoRootProps, getInputProps: getLogoInputProps } = useDropzone({
-  onDrop: onDropLogo,
-  accept: {"image/jpeg, image/png, image/jpg": [] }, 
-  multiple: false, 
-});
+        if (!token) {
+          alert("Session expired. Please log in again.");
+          window.location.href = "/login";
+          return;
+        }
 
-// Use Dropzone hook for banner
-const { getRootProps: getBannerRootProps, getInputProps: getBannerInputProps } = useDropzone({
-  onDrop: onDropBanner,
-  accept: {"image/jpeg, image/png, image/jpg": [] },
-  multiple: false, 
-});
-const fetchCompanyData = async () => {
-  try {
-    // Get token from localStorage (or wherever it's stored)
-    const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:4000/company/getcompanydata",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
+        if (response.data) {
+          const {
+            CompanyName,
+            aboutUs,
+            email,
+            phone,
+            logo,
+            bannerImage,
+            id,
+            foundingInfo,
+            socialMediaProfiles,
+            accountSettings,
+          } = response.data.companyDetails;
 
-    // Send GET request with token in the Authorization header
-    const response = await axios.get("http://localhost:4000/company/getcompanydata", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+          setId(id || "");
+          setCompanyName(CompanyName || "");
+          setEmail(email || "");
+          setPhone(phone || "");
+          setAboutUs(aboutUs || "");
+          setLogo(logo || null);
+          setBanner(bannerImage || null);
+
+          if (foundingInfo) {
+            setFoundersName(foundingInfo.foundersName || "");
+            setOrganizationType(foundingInfo.organizationType || "");
+            setIndustryType(foundingInfo.industryType || "");
+            setTeamSize(foundingInfo.teamSize || "");
+            setYearOfEstablishment(
+              foundingInfo.yearOfEstablishment
+                ? format(new Date(foundingInfo.yearOfEstablishment), "yyyy-MM-dd")
+                : ""
+            );
+
+            setWebsite(foundingInfo.website || "");
+            setCompanyVision(foundingInfo.companyVision || "");
+          }
+
+          if (socialMediaProfiles && Array.isArray(socialMediaProfiles)) {
+            setLinks((prevLinks) =>
+              prevLinks.map((link) => {
+                const matchedProfile = socialMediaProfiles.find(
+                  (profile) => profile.platform === link.platform
+                );
+                return matchedProfile
+                  ? { ...link, url: matchedProfile.link }
+                  : link;
+              })
+            );
+          }
+          // Directly set accountSettings values here
+          if (accountSettings) {
+            setEmail(accountSettings.email || "");
+            setPhone(accountSettings.phone || "");
+            setLocation(accountSettings.location || "");
+            setAddress(accountSettings.address || "");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching company data:", error.message);
+      }
+    };
+
+    fetchCompanyData();
+  }, [location, address]);
+
+  // File validation function for logo
+  const onDropLogo = (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    setLogo(file);
+  };
+
+  // File validation function for banner
+  const onDropBanner = (acceptedFiles) => {
+    const file = acceptedFiles[0];
+    setBanner(file);
+  };
+
+  // Use Dropzone hook for logo
+  const { getRootProps: getLogoRootProps, getInputProps: getLogoInputProps } =
+    useDropzone({
+      onDrop: onDropLogo,
+      accept: { "image/jpeg, image/png, image/jpg": [] },
+      multiple: false,
     });
 
-    if (response.data.success) {
-      const { companyInfo } = response.data.company;
+  // Use Dropzone hook for banner
+  const {
+    getRootProps: getBannerRootProps,
+    getInputProps: getBannerInputProps,
+  } = useDropzone({
+    onDrop: onDropBanner,
+    accept: { "image/jpeg, image/png, image/jpg": [] },
+    multiple: false,
+  });
 
-      // Set company data in your state or form inputs
-      setCompanyName(companyInfo?.companyName || "");
-      setAboutUs(companyInfo?.aboutUs || "");
-      setLogo(companyInfo?.logo || null);
-      setBanner(companyInfo?.bannerImage || null);
-    } else {
-      console.error("Error fetching company data:", response.data.message);
-    }
-  } catch (error) {
-    console.error("Error fetching company data:", error.response ? error.response.data.message : error.message);
-  }
-};
-
-
- 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -166,24 +213,12 @@ const fetchCompanyData = async () => {
     if (logo) formData.append("logo", logo);
     if (banner) formData.append("banner", banner);
 
+    // Append other form data as a stringified JSON object
     const companyInfo = {
-      companyName: companyName,
+      companyName: CompanyName,
       aboutUs: aboutUs,
     };
-    // Append companyInfo as a stringified object
     formData.append("companyInfo", JSON.stringify(companyInfo));
-
-     // Append foundingInfo as a stringified object
-     const foundingInfo = {
-      foundersName,
-      organizationType,
-      industryType,
-      teamSize,
-      yearOfEstablishment,
-      website,
-      companyVision,
-    };
-    formData.append("foundingInfo", JSON.stringify(foundingInfo));
 
     try {
       // Log FormData for debugging
@@ -191,12 +226,15 @@ const fetchCompanyData = async () => {
         console.log(key, value);
       });
 
-      // Send request
+      // Send POST request with FormData
       const response = await axios.post(
         "http://localhost:4000/company/company-info",
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
+
       if (response.data.success) {
         setActiveTab("Founding Info");
         alert("Company Info Submitted Successfully!");
@@ -204,6 +242,123 @@ const fetchCompanyData = async () => {
         alert("Failed to submit company info.");
       }
     } catch (error) {
+      console.error("Error during form submission:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    }
+  };
+
+  const handleFoundingInfoSubmit = async (e) => {
+    e.preventDefault();
+
+    const foundingInfo = {
+      foundersName: foundersName,
+      organizationType: organizationType,
+      industryType: industryType,
+      teamSize: teamSize,
+      yearOfEstablishment: yearOfEstablishment,
+      website: website,
+      companyVision: companyVision,
+    };
+
+    // Prepare the payload
+    const payload = {
+      id: id,
+      foundingInfo: foundingInfo,
+    };
+
+    try {
+      // Send POST request with founding info as JSON
+      const response = await axios.post(
+        "http://localhost:4000/company/founding-info",
+        payload, // Send the data directly as JSON
+        { headers: { "Content-Type": "application/json" } } // Set content type to JSON
+      );
+      console.log(response);
+
+      if (response.data.success) {
+        setActiveTab("Social Media Profile");
+        alert("Founding Info Submitted Successfully!");
+      } else {
+        alert("Failed to submit founding info.");
+      }
+    } catch (error) {
+      console.error("Error during founding info submission:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      } else if (error.request) {
+        console.error("Error request:", error.request);
+      } else {
+        console.error("Error message:", error.message);
+      }
+    }
+  };
+
+  const SocialLinksSubmit = async () => {
+    const socialMediaProfiles = links.map((link) => ({
+      platform: link.platform,
+      link: link.url,
+    }));
+
+    const payload = {
+      id: id,
+      socialMediaProfiles,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/company/social-media",
+        payload
+      );
+      if (response.data.success) {
+        setActiveTab("Account Settings");
+        alert("Social Media Profiles updated successfully!");
+      } else {
+        alert("Failed to update profiles: " + response.data.message);
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      alert("An error occurred. Please try again later.");
+    }
+  };
+  const handleAccountSettingsSubmit = async (e) => {
+    e.preventDefault();
+
+    // Prepare the accountSettings payload
+    const accountSettings = {
+      email: email,
+      phone: phone,
+      location: location,
+      address: address,
+    };
+
+    // Prepare the payload to send
+    const payload = {
+      id: id, // Assuming you have the companyId in the state
+      accountSettings: accountSettings,
+    };
+
+    try {
+      // Send POST request with accountSettings data as JSON
+      const response = await axios.post(
+        "http://localhost:4000/company/account-settings",
+        payload, // Send the data directly as JSON
+        { headers: { "Content-Type": "application/json" } } // Set content type to JSON
+      );
+      console.log(response);
+
+      if (response.data.success) {
+        alert("Account Settings Submitted Successfully!");
+      } else {
+        alert("Failed to submit account settings.");
+      }
+    } catch (error) {
+      console.error("Error during account settings submission:", error);
       if (error.response) {
         console.error("Error response:", error.response.data);
       } else if (error.request) {
@@ -222,7 +377,7 @@ const fetchCompanyData = async () => {
           "Company Info",
           "Founding Info",
           "Social Media Profile",
-          "Contact",
+          "Account Settings",
         ].map((tab) => (
           <button
             key={tab}
@@ -246,8 +401,8 @@ const fetchCompanyData = async () => {
             <div className="grid grid-cols-3 mb-6">
               {/* Logo Section */}
               <div className="col-span-1 flex flex-col">
-                <label className="block text-sm font-medium ml-20 text-gray-700">
-                  Logo
+                <label className="block text-sm font-medium ml-16 text-gray-700">
+                  Upload logo
                 </label>
                 <div
                   {...getLogoRootProps()}
@@ -255,7 +410,7 @@ const fetchCompanyData = async () => {
                 >
                   {logo ? (
                     <img
-                      src={URL.createObjectURL(logo)}
+                      src={logo}
                       alt="Logo"
                       className="w-full h-full object-cover"
                     />
@@ -269,7 +424,7 @@ const fetchCompanyData = async () => {
               {/* Banner Section */}
               <div className="col-span-2 flex flex-col items-center">
                 <label className="block text-sm font-medium text-gray-700">
-                  Banner
+                  Upload Banner
                 </label>
                 <div
                   {...getBannerRootProps()}
@@ -277,7 +432,7 @@ const fetchCompanyData = async () => {
                 >
                   {banner ? (
                     <img
-                      src={URL.createObjectURL(banner)} // Use createObjectURL to display the image
+                      src={banner} // Use createObjectURL to display the image
                       alt="Banner"
                       className="w-full h-full object-cover"
                     />
@@ -297,7 +452,8 @@ const fetchCompanyData = async () => {
                 </label>
                 <input
                   type="text"
-                  value={companyName}
+                  value={CompanyName}
+                  readOnly
                   onChange={(e) => {
                     setCompanyName(e.target.value);
                   }}
@@ -325,7 +481,7 @@ const fetchCompanyData = async () => {
         )}
 
         {activeTab === "Founding Info" && (
-          <div>
+          <form onSubmit={handleFoundingInfoSubmit}>
             <div className="grid grid-cols-2 mt-10 gap-6 mb-6">
               {/* Founder Name */}
               <div>
@@ -334,6 +490,10 @@ const fetchCompanyData = async () => {
                 </label>
                 <input
                   type="text"
+                  value={foundersName}
+                  onChange={(e) => {
+                    setFoundersName(e.target.value);
+                  }}
                   placeholder="Enter founder's name..."
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                 />
@@ -345,7 +505,10 @@ const fetchCompanyData = async () => {
                 </label>
                 <select
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
-                  defaultValue=""
+                  value={organizationType}
+                  onChange={(e) => {
+                    setOrganizationType(e.target.value);
+                  }}
                 >
                   <option value="" disabled>
                     Select...
@@ -362,7 +525,10 @@ const fetchCompanyData = async () => {
                 </label>
                 <select
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
-                  defaultValue=""
+                  value={industryType}
+                  onChange={(e) => {
+                    setIndustryType(e.target.value);
+                  }}
                 >
                   <option value="" disabled>
                     Select...
@@ -379,7 +545,10 @@ const fetchCompanyData = async () => {
                 </label>
                 <select
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
-                  defaultValue=""
+                  value={teamSize}
+                  onChange={(e) => {
+                    setTeamSize(e.target.value);
+                  }}
                 >
                   <option value="" disabled>
                     Select...
@@ -397,6 +566,10 @@ const fetchCompanyData = async () => {
                 </label>
                 <input
                   type="date"
+                  value={yearOfEstablishment} // Value should be in the 'YYYY-MM-DD' format
+                  onChange={(e) => {
+                    setYearOfEstablishment(e.target.value); // Update the state with the selected date
+                  }}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                 />
               </div>
@@ -409,6 +582,10 @@ const fetchCompanyData = async () => {
                 <input
                   type="url"
                   placeholder="Website URL..."
+                  value={website}
+                  onChange={(e) => {
+                    setWebsite(e.target.value);
+                  }}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                 />
               </div>
@@ -421,82 +598,62 @@ const fetchCompanyData = async () => {
               </label>
               <textarea
                 rows="5"
+                value={companyVision}
+                onChange={(e) => {
+                  setCompanyVision(e.target.value);
+                }}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                 placeholder="Tell us about your company vision..."
               />
             </div>
-          </div>
+          </form>
         )}
         {activeTab === "Social Media Profile" && (
-          <div>
-            <div className="space-y-4 mb-6 mt-14">
-              {socialLinks.map((link) => (
-                <div key={link.id} className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 w-auto">
-                    {/* Custom dropdown with icon */}
-                    <div className="relative">
-                      <select
-                        value={link.platform}
-                        onChange={(e) =>
-                          handleSocialLinkChange(link.id, e.target.value)
-                        }
-                        className="block w-auto border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2 pl-10"
-                      >
-                        <option value="Facebook">
-                          {" "}
-                          <FaFacebook /> Facebook
-                        </option>
-                        <option value="Twitter">Twitter</option>
-                        <option value="Instagram">Instagram</option>
-                        <option value="LinkedIn">LinkedIn</option>
-                        <option value="YouTube">YouTube</option>
-                      </select>
-                      {/* Icon placement inside the select */}
-                      {link.platform && (
-                        <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xl ">
-                          {link.icon}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <input
-                    type="url"
-                    value={link.url}
-                    onChange={(e) =>
-                      handleSocialLinkChange(link.id, "url", e.target.value)
-                    }
-                    placeholder="Profile link/url..."
-                    className="block w-2/3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
-                  />
-
-                  <button
-                    onClick={() => handleRemoveSocialLink(link.id)}
-                    className="text-red-500 border px-2 border-gray-300 rounded-md hover:text-white py-1 hover:bg-red-400 text-lg mt-2 sm:mt-0"
-                  >
-                    ✖
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={handleAddSocialLink}
-              className="flex items-center text-blue-600 hover:text-blue-800"
-            >
-              + Add New Social Link
-            </button>
+          <div className="w-full mx-auto p-6 bg-white shadow rounded">
+            {links.map((link) => (
+              <div
+                key={link.id}
+                className="flex items-center mb-4 space-x-4 border-b pb-2 flex-wrap"
+              >
+                <div className="text-xl">{link.icon}</div>
+                <select
+                  value={link.platform}
+                  onChange={(e) =>
+                    handlePlatformChange(link.id, e.target.value)
+                  }
+                  className="border rounded px-2 py-1 w-full sm:w-auto"
+                >
+                  <option value="Select">Select</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="Twitter">Twitter</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="YouTube">YouTube</option>
+                </select>
+                <input
+                  type="text"
+                  value={link.url}
+                  onChange={(e) => handleInputChange(link.id, e.target.value)}
+                  placeholder="Profile link/url..."
+                  className="flex-1 border rounded px-2 py-1 mt-2 sm:mt-0"
+                />
+              </div>
+            ))}
           </div>
         )}
 
-        {activeTab === "Contact" && (
-          <form className="space-y-4">
+        {activeTab === "Account Settings" && (
+          <form className="space-y-4 ">
             <div>
               <label className="block font-semibold text-gray-600">
                 Map Location :
               </label>
               <input
                 type="text"
+                name="location"
+                value={location}
+                onChange={(e) => {
+                  setLocation(e.target.value);
+                }}
                 placeholder="Enter Your Company location URL"
                 className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
@@ -508,12 +665,16 @@ const fetchCompanyData = async () => {
               </label>
               <div className="flex mt-1 focus:ring-blue-400">
                 <select className="border rounded-l-md px-3 py-2 focus:ring-blue-400 bg-gray-50">
-                  <option>+880</option>
                   <option>+91</option>
+                  <option>+880</option>
                   <option>+1</option>
                 </select>
                 <input
                   type="text"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                  }}
                   placeholder="Phone number.."
                   className="w-full border rounded-r-md px-3 py-2 focus:outline-none"
                 />
@@ -526,6 +687,10 @@ const fetchCompanyData = async () => {
               </label>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 placeholder="Email address"
                 className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
@@ -536,6 +701,11 @@ const fetchCompanyData = async () => {
               </label>
               <textarea
                 rows="5"
+                name="address"
+                value={address}
+                onChange={(e) => {
+                  setAddress(e.target.value);
+                }}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2"
                 placeholder="Write Your Company Address...."
               />
@@ -552,21 +722,52 @@ const fetchCompanyData = async () => {
       >
         {/* Render Previous Button on All Pages Except Company Info */}
         {activeTab !== "Company Info" && (
-          <button className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300">
+          <button
+            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-300"
+            onClick={handlePrevious} // Implement handlePrevious for navigation
+          >
             Previous
           </button>
         )}
-        {activeTab === "Company Info" ? (
+
+        {/* Conditional Save & Next Button */}
+        {activeTab === "Founding Info" ? (
           <button
-            type="submit"
+            type="button"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
-            onClick={handleSubmit} // Trigger handleSubmit for Company Info
+            onClick={handleFoundingInfoSubmit}
           >
             Save & Next
           </button>
+        ) : activeTab === "Company Info" ? (
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+            onClick={handleSubmit}
+          >
+            Save & Next
+          </button>
+        ) : activeTab === "Social Media Profile" ? (
+          <button
+            type="button"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+            onClick={SocialLinksSubmit} // Add specific handler for Social Media tab
+          >
+            Save & Next
+          </button>
+        ) : activeTab === "Account Settings" ? (
+          <button
+            type="button"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+            onClick={handleAccountSettingsSubmit} // Add the handler for Account Settings
+          >
+            Finish Editing
+          </button>
         ) : (
           <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
-            {activeTab === "Contact" ? "Finish Editing" : "Save & Next"}
+            {activeTab === "Account Settings"
+              ? "Finish Editing"
+              : "Save & Next"}
           </button>
         )}
       </div>

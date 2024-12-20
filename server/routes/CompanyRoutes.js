@@ -5,7 +5,6 @@ const {
   addOrUpdateFoundingInfo,
   addSocialMediaProfile,
   updateAccountSettings,
-getCompanyDataByEmail,
   deleteSocialMediaProfile,
   getAllCompanies,
 } = require("../controller/CompanyController");
@@ -26,7 +25,7 @@ router.post("/social-media", addSocialMediaProfile);
 router.post("/account-settings", updateAccountSettings);
 
 // Get Company Data
-router.get("/getcompanydata",authenticateUser, CompanyController.getCompanyDataByUserId);
+router.get("/getcompanydata",authenticateUser, CompanyController.getCompanyDetails);
 
 // Delete Social Media Profile
 router.delete("/delete-social-media", deleteSocialMediaProfile);

@@ -90,11 +90,13 @@ const Login = () => {
       // Check for valid response (with token and user data)
       if (response.data && response.data.token && response.data.user) {
         const { token, user } = response.data;
+        console.log("users detail recived",user)
         if (user.role === "employer") {
           localStorage.setItem("token", token);        // Store token
-          localStorage.setItem("userId", user._id);    // Store user ID
-          localStorage.setItem("companyName", user.companyName); // Store company name
+          localStorage.setItem("id", user.id);    // Store user ID
+          localStorage.setItem("CompanyName", user.CompanyName); // Store company name
         }
+
 
         // Store token and user data based on the rememberMe flag
         const storageMethod = rememberMe ? localStorage : sessionStorage;
@@ -114,7 +116,7 @@ const Login = () => {
             break;
           case "employer":
             navigate("/EmployerDashboard", {
-              state: { email: user.email, companyName: user.companyName },
+              state: { email: user.email, companyName: user.CompanyName },
             });
             break;
           case "admin":

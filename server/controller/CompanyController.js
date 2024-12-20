@@ -33,9 +33,10 @@ exports.addOrUpdateCompanyInfo = async (req, res) => {
 
 
 exports.addOrUpdateFoundingInfo = async (req, res) => {
-  const { companyId, foundingInfo } = req.body;
+  const { id, foundingInfo } = req.body;
+  console.log(req.body);
 
-  if (!companyId || !foundingInfo) {
+  if (!id || !foundingInfo) {
     return res.status(400).json({
       success: false,
       message: "companyId and foundingInfo are required.",
@@ -44,7 +45,7 @@ exports.addOrUpdateFoundingInfo = async (req, res) => {
 
   try {
     const company = await Company.findByIdAndUpdate(
-      companyId,
+      id,
       { foundingInfo },
       { new: true, upsert: true }
     );
@@ -62,35 +63,58 @@ exports.addOrUpdateFoundingInfo = async (req, res) => {
 };
 
 
+
 exports.addSocialMediaProfile = async (req, res) => {
-  const { companyId, socialMediaProfiles } = req.body;
+  const { id, socialMediaProfiles } = req.body;
+
+  // Validate request body
+  if (!id || !Array.isArray(socialMediaProfiles) || socialMediaProfiles.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid input. 'id' and 'socialMediaProfiles' are required.",
+    });
+  }
 
   try {
+    // Update the company document by adding new social media profiles
     const company = await Company.findByIdAndUpdate(
-      companyId,
-      { $push: { socialMediaProfiles: { $each: socialMediaProfiles } } }, 
+      id,
+      { $push: { socialMediaProfiles: { $each: socialMediaProfiles } } },
       { new: true }
     );
 
+    // If company not found, return an error
     if (!company) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Company not found." });
+      return res.status(404).json({
+        success: false,
+        message: "Company not found.",
+      });
     }
 
-    res.status(200).json({ success: true, company });
+    // Respond with the updated company document
+    res.status(200).json({
+      success: true,
+      message: "Social media profiles added successfully.",
+      socialMediaProfiles: company.socialMediaProfiles, // Return updated profiles
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Error adding social media profiles:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while adding social media profiles.",
+      error: error.message,
+    });
   }
 };
 
 
+
 exports.updateAccountSettings = async (req, res) => {
-  const { companyId, accountSettings } = req.body;
+  const {id, accountSettings } = req.body;
 
   try {
     const company = await Company.findByIdAndUpdate(
-      companyId,
+      id,
       { accountSettings },
       { new: true }
     );
@@ -101,25 +125,51 @@ exports.updateAccountSettings = async (req, res) => {
 };
 
 
-exports.getCompanyDataByUserId = async (req, res) => {
-  const { user } = req; // The authenticated user object is available in req.user
-
+exports.getCompanyDetails = async (req, res) => {
   try {
-    // Find the company based on the userId (from req.user)
-    const company = await Company.findOne({ userId: user._id });
-    console.log(company)
+    // Fetch company info directly from the database
+    const company = await Company.findOne({}); // Modify this query as needed
+
     if (!company) {
-      return res.status(404).json({ success: false, message: "Company not found" });
+      return res.status(404).json({
+        success: false,
+        message: "No company information found.",
+      });
     }
 
-    res.status(200).json({ success: true, company });
+    const logoUrl = company.companyInfo.logo ? `http://localhost:4000/${company.companyInfo.logo}` : null;
+    const bannerUrl = company.companyInfo.bannerImage ? `http://localhost:4000/${company.companyInfo.bannerImage}` : null;
+
+
+      // Extract founding information
+      const foundingInfo = company.foundingInfo || null;
+      const accountSettings = company.accountSettings || null;
+    // Return the company details including CompanyName and companyInfo
+    return res.status(200).json({
+      success: true,
+      message: "Company info retrieved successfully.",
+      companyDetails: {
+        id:company._id,
+        CompanyName: company.CompanyRegister.CompanyName,
+        email:company.CompanyRegister.email,
+        phone:company.CompanyRegister.phone,
+        logo: logoUrl,
+        bannerImage: bannerUrl,
+        aboutUs: company.companyInfo.aboutUs,
+        foundingInfo: foundingInfo, 
+        accountSettings:accountSettings,
+        socialMediaProfiles: company.socialMediaProfiles || [],
+      },
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Error fetching company info:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching company info.",
+      error: error.message,
+    });
   }
 };
-
-
-
 
 exports.deleteSocialMediaProfile = async (req, res) => {
   const { companyId, platform } = req.body;

@@ -15,7 +15,6 @@ const CompanySchema = new mongoose.Schema({
   companyInfo: {
     logo: String,
     bannerImage: String,
-    companyName: String,
     aboutUs: String,
   },
   foundingInfo: {
@@ -34,6 +33,8 @@ const CompanySchema = new mongoose.Schema({
     },
   ],
   accountSettings: {
+    email: String,
+    phone: String,
     location: String,
     address: String,
   },

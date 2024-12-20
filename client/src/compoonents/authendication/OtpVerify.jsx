@@ -9,7 +9,7 @@ function OtpVerification() {
   const navigate = useNavigate();
 
   const location = useLocation();
-  const { email, username, role, companyName } = location.state || {}; // Get role and companyName from state
+  const { email, username, role, CompanyName } = location.state || {}; // Get role and CompanyName from state
 
   console.log("Location State:", location.state);
 
@@ -44,7 +44,7 @@ function OtpVerification() {
           email,
           username,
           role,
-          companyName,
+          CompanyName,
         }
       );
 
@@ -57,7 +57,7 @@ function OtpVerification() {
           console.log("Navigating to the appropriate page based on role");
           
           if (role === "employer") {
-            navigate("/login", { state: { email, companyName } });
+            navigate("/login", { state: { email, CompanyName } });
           } else {
             navigate("/payment", { state: { email, username } });
           }
@@ -96,8 +96,8 @@ function OtpVerification() {
           email: email,
           username: username,
           role: role,
-          companyName: companyName,
-        }), // Pass role and companyName if employer
+          CompanyName: CompanyName,
+        }), // Pass role and CompanyName if employer
       });
       const data = await response.json();
 
