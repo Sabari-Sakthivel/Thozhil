@@ -432,7 +432,7 @@ const CompanyInfo = () => {
                 >
                   {banner ? (
                     <img
-                      src={banner} // Use createObjectURL to display the image
+                      src={banner} 
                       alt="Banner"
                       className="w-full h-full object-cover"
                     />

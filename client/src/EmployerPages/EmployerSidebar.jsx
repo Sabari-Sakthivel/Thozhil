@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { MdOutlineDashboard } from "react-icons/md";
 import { FiPlusCircle } from "react-icons/fi";
 import { IoBriefcaseOutline } from "react-icons/io5";
+import { HiOutlineUsers } from "react-icons/hi2";
 
 const EmployerSidebar = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const EmployerSidebar = () => {
     { id: "profile", icon: <HiUser size={22} />, label: "Profile", path: "/EmployerDashboard/employerprofile" },
     { id: "postjob", icon: <FiPlusCircle size={22} />, label: "Post a Job", path: "/EmployerDashboard/postjob" },
     { id: "myjobs", icon: <IoBriefcaseOutline size={22} />, label: "My Jobs", path: "/EmployerDashboard/myjobs" },
+    { id: "applications", icon: <HiOutlineUsers size={22} />, label: "applications", path: "/EmployerDashboard/applications" },
     { id: "savedcandidates", icon: <FiBookmark size={22} />, label: "Saved Candidates", path: "/EmployerDashboard/savedcandidates" },
     { id: "settings", icon: <FiSettings size={22} />, label: "Settings", path: "/EmployerDashboard/employersettings" },
   ];

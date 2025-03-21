@@ -7,6 +7,8 @@ const {
   updateAccountSettings,
   deleteSocialMediaProfile,
   getAllCompanies,
+  PostJobdetails,
+  getJobDetails
 } = require("../controller/CompanyController");
 const CompanyFileupload =require("../middleware/CompanyFileupload")
 const CompanyController=require("../controller/CompanyController");
@@ -33,4 +35,9 @@ router.delete("/delete-social-media", deleteSocialMediaProfile);
 // get all companies ....
 router.get("/getallcompanies",getAllCompanies)
 
+// Post  Jobdetails 
+router.post("/postjobdetails",PostJobdetails)
+
+// Get all Posted jobs
+router.get("/getalljobdetails",getJobDetails)
 module.exports = router;

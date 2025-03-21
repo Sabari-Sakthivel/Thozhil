@@ -28,6 +28,7 @@ import EmployerOverview from "../EmployerPages/EmployerOverview";
 import EmployerProfile from "../EmployerPages/Profile";
 import PostJob from "../EmployerPages/Postjob";
 import MyJobs from "../EmployerPages/Myjobs";
+import Applications from "../EmployerPages/Applications"
 import Savedcandidates from "../EmployerPages/Savedcandidates";
 import EmployerSettings from "../EmployerPages/Settings"
 
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
       {path:"employerprofile", element:<EmployerProfile/>},
       {path:"postjob", element:<PostJob/>},
       {path:"myjobs", element:<MyJobs/>},
+      {path:"applications", element:<Applications/>},
       {path:"savedcandidates", element:<Savedcandidates/>},
       {path:"employersettings", element:<EmployerSettings/>},
 

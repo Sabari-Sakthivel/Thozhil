@@ -59,7 +59,7 @@ function OtpVerification() {
           if (role === "employer") {
             navigate("/login", { state: { email, CompanyName } });
           } else {
-            navigate("/payment", { state: { email, username } });
+            navigate("/login", { state: { email, username } });
           }
         }, 1000);
       } else {
