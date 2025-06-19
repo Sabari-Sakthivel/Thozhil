@@ -94,7 +94,8 @@ const PostJobForm = () => {
       </h1>
 
       {/* Job Title and Tags */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Job Title */}
         <div>
           <label className="block text-lg text-gray-700 font-bold mb-2">
             Job Title:
@@ -108,6 +109,8 @@ const PostJobForm = () => {
             required
           />
         </div>
+
+        {/* Tags */}
         <div>
           <label className="block text-lg text-gray-700 font-bold mb-2">
             Tags:
@@ -119,6 +122,22 @@ const PostJobForm = () => {
             onChange={handleChange}
             className="w-full border border-gray-300 p-2 rounded-md"
           />
+        </div>
+
+        {/* Job Status */}
+        <div>
+          <label className="block text-lg text-gray-700 font-bold mb-2">
+            Job Status:
+          </label>
+          <select
+            name="jobStatus"
+            value={formData.jobStatus}
+            onChange={handleChange}
+            className="w-full border border-gray-300 p-2 rounded-md"
+          >
+            <option value="Active">Active</option>
+            <option value="Expired">Expired</option>
+          </select>
         </div>
       </div>
 
@@ -268,7 +287,9 @@ const PostJobForm = () => {
       </div>
 
       {/* Job Benefits */}
-      <h3 className="text-lg font-bold mt-3 text-gray-700 mb-4">Job Benefits:</h3>
+      <h3 className="text-lg font-bold mt-3 text-gray-700 mb-4">
+        Job Benefits:
+      </h3>
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-300 flex flex-wrap gap-4">
         {benefits.map((benefit) => (
           <span

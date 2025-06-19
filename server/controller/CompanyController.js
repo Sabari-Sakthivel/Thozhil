@@ -218,6 +218,7 @@ exports.PostJobdetails = async (req, res) => {
     const {
       jobTitle,
       tags,
+      jobStatus,
       salary,
       education,
       experience,
@@ -254,6 +255,7 @@ exports.PostJobdetails = async (req, res) => {
     const newJob = new PostJob({
       jobTitle,
       tags,
+      jobStatus,
       salary,
       education,
       experience,

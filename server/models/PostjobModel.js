@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const postJobSchema = new mongoose.Schema({
   jobTitle: { type: String, required: true },
   tags: { type: [String], default: [] },
+  jobStatus:{type:String,enum:["Active","Expired"],default:"Active"},
   salary: {
     min: { type: Number, required: true },
     max: { type: Number, required: true },

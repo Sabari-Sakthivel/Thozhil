@@ -1,32 +1,35 @@
 const nodemailer = require("nodemailer");
+require("dotenv").config(); // Make sure this is at the top if not already loaded in your entry file
 
 const sendEmail = async (to, subject, html) => {
-  // Create a transporter for Gmail SMTP service
+  // Create transporter for Gmail SMTP
   const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email provider here (Gmail in this case)
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // true for 465, false for 587
     auth: {
-      user: process.env.Email_USER, // Your Gmail email address
-      pass: process.env.EMAIL_PASS, // Your Gmail password or app-specific password
-    },
-    tls: {
-      rejectUnauthorized: false, // Allow TLS connection (you might remove this if using OAuth)
+      user: process.env.EMAIL_USER,  // Corrected env var key
+      pass: process.env.EMAIL_PASS,  // App password
     },
   });
 
   // Email options
   const mailOptions = {
-    from: process.env.Email_USER, // Sender email
-    to, // Recipient email
-    subject, // Subject of the email
-    html, // HTML body of the email (HTML content can be sent here)
+    from: process.env.EMAIL_USER,
+    to,
+    subject,
+    html,
   };
 
   try {
+    // Verify transporter connection
+    await transporter.verify();
+    console.log("SMTP server is ready to send messages");
+
     // Send the email
-    await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully");
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully: ", info.response);
   } catch (error) {
-    // Log error details in case of failure
     console.error("Error sending email:", error);
   }
 };
