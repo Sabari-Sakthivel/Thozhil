@@ -18,7 +18,7 @@ const EmployerSidebar = () => {
 
   // Employer-specific menu items
   const menuItems = [
-    { id: "overview", icon: <MdOutlineDashboard size={22} />, label: "Dashboard", path: "/EmployerDashboard" },
+    { id: "overview", icon: <MdOutlineDashboard size={22} />, label:"Overview", path: "/EmployerDashboard" },
     { id: "profile", icon: <HiUser size={22} />, label: "Profile", path: "/EmployerDashboard/employerprofile" },
     { id: "postjob", icon: <FiPlusCircle size={22} />, label: "Post a Job", path: "/EmployerDashboard/postjob" },
     { id: "myjobs", icon: <IoBriefcaseOutline size={22} />, label: "My Jobs", path: "/EmployerDashboard/myjobs" },

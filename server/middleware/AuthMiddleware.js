@@ -12,16 +12,19 @@ const authenticateUser = async (req, res, next) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
+    console.log(token)
 
     // Verify and decode the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    if (!Types.ObjectId.isValid(decoded.id)) {
+    console.log(decoded)
+
+    if (!Types.ObjectId.isValid(decoded._id)) {
       return res.status(401).json({ message: "Invalid ID in token" });
     }
 
     // Try to find the user by ID
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded._id);
 
     if (user) {
       req.user = user; // Attach user to request
@@ -29,7 +32,7 @@ const authenticateUser = async (req, res, next) => {
     }
 
     // If user not found, try to find the company by ID
-    const company = await Company.findById(decoded.id);
+    const company = await Company.findById(decoded._id);
 
     if (company) {
       req.company = company; // Attach company to request

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-const JobsList = () => {
+const JobsList = ({title="My Jobs", titleClass=""}) => {
   const [jobs, setJobs] = useState([]);
   // const [JobCounts,setJobCounts] = useState({});
 
@@ -32,7 +32,7 @@ const JobsList = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-6">My Jobs</h2>
+      <h2 className="text-2xl font-bold mb-6">{title}</h2>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <div className="grid grid-cols-4 bg-gray-100 p-4 font-semibold text-gray-700">
@@ -73,7 +73,7 @@ const JobsList = () => {
                       <>
                         <FaCheckCircle className="text-green-500" /> Active
                       </>
-                    )}
+                    )} 
                   </span>
                 );
               })()}
