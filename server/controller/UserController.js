@@ -334,6 +334,7 @@ const getUserDetails = async (req, res) => {
       skills: user.skills,
       resume: user.resume ? user.resume : null,
       areaOfInterest: user.areaOfInterest,
+      profilePicture: user.profilePicture,
     };
 
     // If resume exists, return the file path or URL (you may need to adjust depending on storage)
@@ -389,11 +390,7 @@ const updateProfile = asyncHandler(async (req, res) => {
       // Handle profile picture upload
       if (req.files.profilePicture) {
         if (user.profilePicture) {
-          const oldProfilePicturePath = path.join(
-            __dirname,
-            "..",
-            user.profilePicture
-          );
+          const oldProfilePicturePath = path.relative(path.join(__dirname, ".."), req.files.profilePicture[0].path);
 
           // Remove old profile picture file
           if (fs.existsSync(oldProfilePicturePath)) {

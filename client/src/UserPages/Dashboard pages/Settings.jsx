@@ -34,7 +34,7 @@ const SettingsPage = () => {
     resume: null,
     skills: "",
     areaOfInterest: "",
-    profilePicture: null,
+    profilePicture: "",
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -53,6 +53,12 @@ const SettingsPage = () => {
         if (response.status === 200) {
           const data = response.data;
 
+          const profilePicPath = data.profilePicture
+            ? `http://localhost:4000/${data.profilePicture.replace(/\\/g, "/")}`
+            : null;
+
+          setProfilePicture(profilePicPath); // <- key update here!
+
           // Update form data with user profile and resume
           setFormData((prevFormData) => ({
             ...prevFormData,
@@ -70,7 +76,7 @@ const SettingsPage = () => {
             nationality: data.nationality || "",
             graduationYear: data.graduationYear || "",
             resume: data.resume || null, // Ensure resume is handled properly
-            profilePicture: data.profilePicture || null, // Handle profile picture
+            profilePicture: data.profilePicture || "", // Handle profile picture
             skills: data.skills || "",
             areaOfInterest: data.areaOfInterest || "",
           }));
@@ -170,6 +176,10 @@ const SettingsPage = () => {
     const file = acceptedFiles[0];
     const previewURL = URL.createObjectURL(file);
     setProfilePicture(previewURL);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      profilePicture: file,
+    }));
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -260,35 +270,41 @@ const SettingsPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {/* Profile Picture Section (1st Column) */}
-                <div className="col-span-1 justify-center items-center">
+                {/* Profile Picture Section (1st Column) */}
+                <div className="col-span-1 flex flex-col justify-center items-center">
                   <label className="block text-gray-600 mb-2">
                     Profile Picture
                   </label>
                   <div
                     {...getRootProps()}
-                    className={`border-dashed bg-gray-200 border-2 border-gray-300 rounded-md w-52 h-52 text-center cursor-pointer flex flex-col items-center justify-center relative ${
-                      !editMode && "cursor-not-allowed"
+                    className={`border-dashed bg-gray-200 border-2 border-gray-300 rounded-md w-52 h-52 cursor-pointer flex items-center justify-center relative ${
+                      !editMode ? "cursor-not-allowed opacity-60" : ""
                     }`}
                   >
-                    <input {...getInputProps()} disabled={!editMode} />{" "}
-                    {/* Disable input if not in editMode */}
+                    <input {...getInputProps()} disabled={!editMode} />
+
                     {profilePicture ? (
-                      <div className="relative">
+                      <div className="relative w-52 h-52">
                         <img
                           src={profilePicture}
                           alt="Profile Preview"
                           className="w-52 h-52 object-cover rounded-full"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/default-avatar.png"; // Optional: set a default avatar image
+                          }}
                         />
                         {editMode && (
                           <button
+                            type="button"
                             className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setProfilePicture(null); // Clear preview
-                              setFormData({
-                                ...formData,
+                              setProfilePicture(null);
+                              setFormData((prev) => ({
+                                ...prev,
                                 profilePicture: null,
-                              }); // Clear formData
+                              }));
                             }}
                           >
                             ✕
@@ -296,9 +312,9 @@ const SettingsPage = () => {
                         )}
                       </div>
                     ) : (
-                      <div>
-                        <FaCloudDownloadAlt className="text-3xl mx-auto my-auto text-blue-500 mb-2" />
-                        <p className="text-gray-500 mt-5">
+                      <div className="text-center px-2">
+                        <FaCloudDownloadAlt className="text-3xl text-blue-500 mb-2" />
+                        <p className="text-gray-500">
                           Drag & drop a photo or click to browse
                         </p>
                         <p className="text-gray-400 text-sm">
