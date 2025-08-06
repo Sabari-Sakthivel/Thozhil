@@ -171,7 +171,7 @@ const CompanyInfo = () => {
     };
 
     fetchCompanyData();
-  }, [location, address]);
+  }, []);
 
   // File validation function for logo
   const onDropLogo = (acceptedFiles) => {

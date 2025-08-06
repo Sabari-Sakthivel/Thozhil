@@ -238,25 +238,31 @@ const signin = asyncHandler(async (req, res) => {
       // Check the password for employer
       const validPassword = await user.matchPassword(password);
       if (!validPassword) {
-        return res.status(400).json({ message: "Invalid password for employer" });
+        return res
+          .status(400)
+          .json({ message: "Invalid password for employer" });
       }
 
       // Generate JWT token for the employer
-      const token = jwt.sign({ id: user._id, role }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "1h",
-      });
-      console.log(user)
+      const token = jwt.sign(
+        { id: user._id, role },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: "1h",
+        }
+      );
+      console.log(user);
       // Send the response for employer login
       return res.json({
         token,
         user: {
           id: user._id,
-          CompanyName: user.CompanyRegister.CompanyName,  
+          CompanyName: user.CompanyRegister.CompanyName,
           phone: user.CompanyRegister.phone,
           email: user.CompanyRegister.email,
           role,
         },
-     
+
         message: `Login successful as ${role}`,
       });
     }
@@ -275,13 +281,19 @@ const signin = asyncHandler(async (req, res) => {
       // Check the password for candidate
       const validPassword = await user.matchPassword(password);
       if (!validPassword) {
-        return res.status(400).json({ message: "Invalid password for candidate" });
+        return res
+          .status(400)
+          .json({ message: "Invalid password for candidate" });
       }
 
       // Generate JWT token for the candidate
-      const token = jwt.sign({ _id: user._id, role }, process.env.JWT_SECRET_KEY, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        { _id: user._id, role },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: "1h",
+        }
+      );
 
       // Send the response for candidate login
       return res.json({
@@ -298,13 +310,11 @@ const signin = asyncHandler(async (req, res) => {
 
     // If no user is found (not registered)
     return res.status(400).json({ message: "User not registered" });
-
   } catch (error) {
     console.error("Sign-in error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
 
 const getUserDetails = async (req, res) => {
   try {
@@ -390,15 +400,20 @@ const updateProfile = asyncHandler(async (req, res) => {
       // Handle profile picture upload
       if (req.files.profilePicture) {
         if (user.profilePicture) {
-          const oldProfilePicturePath = path.relative(path.join(__dirname, ".."), req.files.profilePicture[0].path);
-
-          // Remove old profile picture file
+          const oldProfilePicturePath = path.join(
+            __dirname,
+            "..",
+            user.profilePicture.replace(/\\/g, "/")
+          );
           if (fs.existsSync(oldProfilePicturePath)) {
             fs.unlinkSync(oldProfilePicturePath);
           }
         }
 
-        updates.profilePicture = req.files.profilePicture[0].path;
+        updates.profilePicture = req.files.profilePicture[0].path.replace(
+          /\\/g,
+          "/"
+        );
       }
     }
 

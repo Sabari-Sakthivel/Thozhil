@@ -1,54 +1,52 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
-const Company= require("../models/CompanyModel")
-const { Types } = require('mongoose');
+const Company = require("../models/CompanyModel");
+const { Types } = require("mongoose");
 
-// General authentication middleware
 const authenticateUser = async (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Authorization token is required" });
     }
 
-    const token = authHeader.replace("Bearer ", "");
-    console.log(token)
-
-    // Verify and decode the token
+    const token = authHeader.replace("Bearer ", "").trim();
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    console.log(decoded)
+    const id = decoded._id || decoded.id;
 
-    if (!Types.ObjectId.isValid(decoded._id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return res.status(401).json({ message: "Invalid ID in token" });
     }
 
-    // Try to find the user by ID
-    const user = await User.findById(decoded._id);
-
+    // First, try to find a user
+    const user = await User.findById(id);
     if (user) {
-      req.user = user; // Attach user to request
+      req.user = user;
       return next();
     }
 
-    // If user not found, try to find the company by ID
-    const company = await Company.findById(decoded._id);
-
+    // If not a user, try to find a company
+    const company = await Company.findById(id);
     if (company) {
-      req.company = company; // Attach company to request
+      req.company = company;
       return next();
     }
 
-    // If neither user nor company is found
+    // Neither user nor company found
     return res.status(404).json({ message: "User or company not found. Authentication failed." });
   } catch (error) {
     console.error("Authentication error:", error.message);
+
     if (error.name === "JsonWebTokenError") {
       return res.status(401).json({ message: "Invalid token", error: error.message });
     }
+
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ message: "Token expired", error: error.message });
     }
+
     return res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
@@ -56,7 +54,8 @@ const authenticateUser = async (req, res, next) => {
 // Role-based access control middleware
 const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    const role = req.user?.role || req.company?.role;
+    if (!roles.includes(role)) {
       return res.status(403).json({ message: "Access denied. Unauthorized role." });
     }
     next();
