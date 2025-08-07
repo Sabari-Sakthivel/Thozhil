@@ -1,11 +1,41 @@
-import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
 import Header from "../../UserPages/Header";
 import Footer from "../../UserPages/Footer";
 import Sidebar from "../../UserPages/Dashboard pages/Sidebar";
 
-const CandidateLayout = () => { // Renamed the component to start with an uppercase letter
+const CandidateLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Token expiry check
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const currentTime = Date.now() / 1000;
+
+        if (decoded.exp < currentTime) {
+          // Token expired
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+      } catch (error) {
+        // Invalid token
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    } else {
+      // No token at all
+      navigate("/login");
+    }
+  }, []);
+
+  // Routes where footer should be hidden
   const noFooterRoutes = ["/candidatelayout", "/candidatelayout/dashboard"];
   const hideFooter = noFooterRoutes.some(route =>
     location.pathname.startsWith(route)
@@ -16,7 +46,7 @@ const CandidateLayout = () => { // Renamed the component to start with an upperc
       {/* Always render Header */}
       <Header />
       <Sidebar />
-      
+
       {/* Main Content */}
       <main className="flex-1 ml-64 px-5 pt-5">
         <Outlet />

@@ -17,7 +17,7 @@ const generateToken = (_id, role) => {
       role,
     },
     JWT_SECRET,
-    { expiresIn: "30d" }
+    { expiresIn: "1min" }
   );
 };
 
